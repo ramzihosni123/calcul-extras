@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a3d6d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>Calcul Extras - Travaux Supplémentaires</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: rgba(26,61,109,0.15); }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 20px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    background: #f5f7fa; color: #222;
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+  .container { max-width: 1300px; margin: 0 auto; }
+  h1 { color: #1a3d6d; margin: 0 0 4px; font-size: 24px; }
+  .subtitle { color: #666; margin-bottom: 20px; font-size: 14px; }
+
+  .card {
+    background: #fff; border-radius: 8px; padding: 18px 22px;
+    margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    margin: 0 0 14px; font-size: 16px; color: #1a3d6d;
+    border-bottom: 2px solid #1a3d6d; padding-bottom: 6px;
+  }
+
+  .grid { display: grid; gap: 12px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 800px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+  input[type=text], input[type=email], input[type=date], input[type=number], input[type=tel], select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid #cfd6df;
+    border-radius: 6px; font-size: 16px; /* 16px évite zoom auto iOS */
+    font-family: inherit; background: #fff;
+    -webkit-appearance: none; appearance: none;
+  }
+  select { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M0 0l5 6 5-6z' fill='%231a3d6d'/></svg>"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #1a3d6d; box-shadow: 0 0 0 2px rgba(26,61,109,0.15);
+  }
+
+  .search-bar { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; }
+  .search-bar > div:first-child { flex: 1; min-width: 200px; }
+  .search-bar > div { flex: 1; min-width: 140px; }
+
+  .results {
+    max-height: 280px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    border: 1px solid #e1e6ec; border-radius: 6px;
+    margin-top: 10px;
+  }
+  .results-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px; border-bottom: 1px solid #eef0f3;
+    cursor: pointer; gap: 8px;
+  }
+  .results-item:active { background: #e0ecf8; }
+  .results-item:hover { background: #f0f5fb; }
+  .results-item:last-child { border-bottom: none; }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-weight: 500; font-size: 14px; word-break: break-word; }
+  .item-meta { font-size: 12px; color: #777; margin-top: 2px; word-break: break-word; }
+  .item-price { font-weight: 600; color: #1a3d6d; padding: 0 4px 0 8px; min-width: 90px; text-align: right; font-size: 13px; flex-shrink: 0; }
+  .badge {
+    display: inline-block; padding: 2px 7px; border-radius: 10px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    margin-right: 6px;
+  }
+  .badge-extra { background: #e7f1ff; color: #1a3d6d; }
+  .badge-cat { background: #f0e7ff; color: #5a2ea6; }
+
+  /* Table desktop */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table {
+    width: 100%; border-collapse: collapse;
+    margin-top: 10px;
+  }
+  th, td {
+    text-align: left; padding: 10px;
+    border-bottom: 1px solid #e1e6ec;
+    font-size: 13px; vertical-align: top;
+  }
+  th { background: #f5f7fa; color: #1a3d6d; font-weight: 600; white-space: nowrap; }
+  td input { font-size: 14px; padding: 6px 8px; }
+  td.num { text-align: right; }
+  td.qty input { width: 90px; text-align: right; }
+  .remove-btn {
+    background: #fce8e8; color: #c33; border: none;
+    padding: 8px 12px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 600;
+  }
+  .remove-btn:active { background: #f5cfcf; }
+
+  .buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+  button.action {
+    background: #1a3d6d; color: white; border: none;
+    padding: 14px 18px; border-radius: 6px; font-size: 15px;
+    font-weight: 600; cursor: pointer; min-height: 48px;
+    flex: 1 1 auto;
+  }
+  button.action:active { transform: scale(0.98); }
+  button.action.secondary { background: #6c757d; }
+  button.action.success { background: #2a9d4f; }
+  button.action.danger { background: #c33; }
+
+  .empty {
+    padding: 24px; text-align: center; color: #888; font-style: italic;
+  }
+
+  .summary-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px;
+    font-size: 14px;
+  }
+  .summary-grid .lbl { color: #555; }
+  .summary-grid .val { text-align: right; font-weight: 600; }
+  .summary-grid .val.big { font-size: 18px; color: #1a3d6d; }
+
+  /* MOBILE — passe la table en cartes */
+  @media (max-width: 700px) {
+    body {
+      padding: 12px;
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-left: max(12px, env(safe-area-inset-left));
+      padding-right: max(12px, env(safe-area-inset-right));
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      font-size: 15px;
+    }
+    .card { padding: 14px; border-radius: 8px; }
+    .card h2 { font-size: 15px; }
+    h1 { font-size: 20px; }
+    .subtitle { font-size: 13px; margin-bottom: 14px; }
+
+    button.action { width: 100%; flex: none; }
+    .buttons { gap: 8px; }
+
+    /* Search bar : forcer le repli en colonne sur mobile */
+    .search-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+    .search-bar > div,
+    .search-bar > div:first-child { flex: 1 1 100%; min-width: 0; width: 100%; }
+
+    /* Transforme la table en cartes empilées */
+    .table-wrap { overflow-x: visible; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead { display: none; }
+    tr {
+      background: #fafbfd; border: 1px solid #e1e6ec; border-radius: 8px;
+      margin-bottom: 10px; padding: 10px;
+    }
+    td {
+      border: none; padding: 6px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 8px; font-size: 14px;
+    }
+    td::before {
+      content: attr(data-label);
+      font-weight: 600; color: #555; font-size: 12px;
+      flex-shrink: 0;
+    }
+    td.qty input { width: 100px; }
+    td input { max-width: 60%; }
+    /* Override des min-width / width inline générés par JS — sinon ça déborde sur iPhone */
+    td input[type="text"],
+    td input[type="number"],
+    td input[type="date"],
+    td input[type="email"],
+    td select {
+      min-width: 0 !important;
+      width: 60% !important;
+      max-width: 60%;
+    }
+    td.num input { width: 60% !important; }
+    .remove-btn { width: 100%; padding: 12px; margin-top: 4px; min-height: 44px; }
+    .empty { display: block !important; text-align: center; }
+
+    /* Empêche le résultat search d'être trop large */
+    .results-item { padding: 14px 12px; }
+    .item-price { min-width: 70px; font-size: 12px; }
+    .item-name { font-size: 13px; }
+    .item-meta { font-size: 11px; }
+
+    .summary-grid { grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 14px; }
+    .summary-grid .val.big { font-size: 17px; }
+
+    /* Boutons OneDrive et "Importer" : meilleur tactile */
+    #suiviCard button[onclick],
+    .no-print label > span {
+      padding: 10px 14px !important;
+      font-size: 13px !important;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* Sélecteur "Référence" : pleine largeur sur mobile */
+    #refProjet {
+      display: block !important;
+      width: 100% !important;
+      margin-top: 6px;
+      font-size: 14px !important;
+      padding: 10px 32px 10px 12px !important;
+    }
+  }
+
+  /* iPhone étroit (SE, mini, etc.) — ≤ 480px */
+  @media (max-width: 480px) {
+    body { padding: 10px; font-size: 15px; }
+    .card { padding: 12px; }
+    h1 { font-size: 18px; }
+
+    /* Encore plus de place pour la valeur, label plus petit */
+    td { padding: 8px 0; }
+    td::before { font-size: 11px; max-width: 38%; }
+    td input,
+    td.num input,
+    td input[type="text"],
+    td input[type="number"],
+    td input[type="date"],
+    td select {
+      width: 62% !important;
+      max-width: 62% !important;
+      font-size: 16px !important; /* évite zoom auto iOS */
+      padding: 10px 10px !important;
+      min-height: 40px;
+    }
+
+    .summary-grid { grid-template-columns: 1fr; gap: 4px; }
+    .summary-grid .val { text-align: left; }
+
+    /* Stats du suivi en 2 colonnes plutôt que carte par carte trop grande */
+    #suiviStats { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Recherche dans suivi : pleine largeur */
+    #suiviSearch, #suiviFilterEtat { width: 100%; }
+  }
+
+  /* Très petit iPhone (320px — SE 1ère gen) */
+  @media (max-width: 360px) {
+    body { padding: 8px; }
+    .card { padding: 10px; }
+    h1 { font-size: 17px; }
+    button.action { font-size: 14px; padding: 12px 14px; }
+    td::before { font-size: 10px; }
+  }
+
+  /* Cibles tactiles minimum 44x44px (recommandation Apple) */
+  @media (hover: none) and (pointer: coarse) {
+    button, .remove-btn, input[type="checkbox"], select { min-height: 44px; }
+    input[type="checkbox"] { min-width: 28px; }
+    .results-item { min-height: 44px; }
+  }
+
+  @media print {
+    body { background: white; padding: 0; }
+    .no-print { display: none !important; }
+    .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+    table, thead, tbody, th, td, tr { display: revert; }
+    thead { display: table-header-group; }
+    tr { background: revert; border: none; padding: 0; margin: 0; }
+    td { display: table-cell; padding: 8px 10px; }
+    td::before { content: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Calculateur d'Extras / Travaux supplémentaires</h1>
+  <div class="subtitle">Recherche d'articles, modification de quantités et génération d'email automatique</div>
+
+  <!-- Project Picker -->
+  <div class="card no-print">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px; border-bottom:2px solid #1a3d6d; padding-bottom:6px;">
+      <h2 style="border:none; margin:0; padding:0; font-size:16px; color:#1a3d6d;">Sélection rapide d'un projet</h2>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <label style="display:inline-block; margin:0;">
+          <span style="background:#1a3d6d; color:white; padding:8px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">📥 Importer Productions.xlsx</span>
+          <input type="file" id="importXlsx" accept=".xlsx,.xls" style="display:none;">
+        </label>
+      </div>
+    </div>
+    <div id="importStatus" style="font-size:12px; color:#666; margin-bottom:8px;"></div>
+    <div>
+      <label>Recherche par n° contrat, client ou adresse <span id="projCount" style="color:#1a3d6d; font-weight:700;"></span></label>
+      <input type="text" id="projectSearch" placeholder="Tapez n° contrat, nom du client, ou adresse...">
+    </div>
+    <div class="results" id="projectResults" style="max-height:240px;"></div>
+    <div id="projectSelected" style="margin-top:10px; font-size:13px; color:#1a3d6d; font-weight:600;"></div>
+  </div>
+
+  <!-- Project Info -->
+  <div class="card no-print-search">
+    <h2>Informations du projet</h2>
+    <div class="grid grid-3">
+      <div>
+        <label>Numéro de contrat</label>
+        <input type="text" id="numContrat" placeholder="ex: 2025-001">
+      </div>
+      <div>
+        <label>Client</label>
+        <input type="text" id="client" placeholder="Nom du client">
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="dateExtra">
+      </div>
+      <div>
+        <label>Adresse du chantier</label>
+        <input type="text" id="adresse" placeholder="Adresse">
+      </div>
+      <div>
+        <label>Vendeur / Demandeur</label>
+        <input type="text" id="vendeur" placeholder="Votre nom">
+      </div>
+      <div>
+        <label>Total contrat ($)</label>
+        <input type="number" inputmode="decimal" id="totalContrat" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label>Extra cumulé ($)</label>
+        <input type="number" inputmode="decimal" id="extraContrat" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label>Vente totale ($)</label>
+        <input type="number" inputmode="decimal" id="venteTotal" step="0.01" placeholder="0.00">
+      </div>
+      <div>
+        <label>Chargé de projet *</label>
+        <select id="emailCP">
+          <option value="">-- Choisir le chargé de projet --</option>
+          <option value="jthoude@bissonexpert.com" data-name="Justin Tremblay-Houde">Justin Tremblay-Houde</option>
+          <option value="RSt-Jean@BissonExpert.com" data-name="Richard St-Jean">Richard St-Jean</option>
+          <option value="gpdufresne@bissonexpert.com" data-name="Gabriel Primeau-Dufresne">Gabriel Primeau-Dufresne</option>
+          <option value="jgagnon@BissonExpert.com" data-name="Jérémie Gagnon">Jérémie Gagnon</option>
+          <option value="__autre__">Autre (saisir manuellement)</option>
+        </select>
+        <input type="email" id="emailCPCustom" placeholder="email@bissonexpert.com" style="display:none; margin-top:6px;">
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="card no-print">
+    <h2>Recherche d'articles</h2>
+    <div class="search-bar">
+      <div>
+        <label>Mot-clé / code / description</label>
+        <input type="text" id="searchInput" placeholder="Ex: béton, drain, HSS, pieu...">
+      </div>
+      <div>
+        <label>Source</label>
+        <select id="filterSource">
+          <option value="all">Tous</option>
+          <option value="extra">Extras prédéfinis</option>
+          <option value="catalogue">Catalogue articles</option>
+        </select>
+      </div>
+      <div>
+        <label>Marge (%) <span style="color:#1a3d6d">★</span></label>
+        <input type="number" inputmode="numeric" id="margePct" value="50" min="0" max="99" step="1" style="font-weight:600;">
+      </div>
+    </div>
+    <div style="margin-top:8px; font-size:12px; color:#666;">
+      <strong>Marge sur prix de vente</strong> — formule: <code>Prix = Coût ÷ (1 - Marge%)</code>. Ex: marge 50% = prix doublé (×2). Marge 25% ≈ ×1,33. Marge 33% ≈ ×1,5.
+    </div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <!-- Selected items -->
+  <div class="card">
+    <h2>Articles sélectionnés</h2>
+    <div class="table-wrap">
+    <table id="selectedTable">
+      <thead>
+        <tr>
+          <th style="width:40%">Description</th>
+          <th>Unité</th>
+          <th>Qté</th>
+          <th class="num">Prix unit. ($)</th>
+          <th class="num">Total ($)</th>
+          <th class="no-print"></th>
+        </tr>
+      </thead>
+      <tbody id="selectedBody">
+        <tr><td colspan="6" class="empty">Aucun article sélectionné. Utilisez la recherche ci-dessus pour ajouter des articles.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="card">
+    <h2>Récapitulatif</h2>
+    <div class="summary-grid">
+      <div class="lbl" style="color:#888">Coût total (sans marge) :</div>
+      <div class="val" id="coutTotal" style="color:#888">0,00 $</div>
+      <div class="lbl" style="color:#888">Marge appliquée :</div>
+      <div class="val" id="margeAffiche" style="color:#888">+ 0,00 $ (0%)</div>
+      <div class="lbl"><strong>Montant de l'extra :</strong></div>
+      <div class="val big" id="sousTotal">0,00 $</div>
+    </div>
+  </div>
+
+  <!-- Impact projet -->
+  <div class="card" style="background:linear-gradient(135deg, #e7f1ff 0%, #f5f9ff 100%); border:1px solid #c5d8f0;">
+    <h2 style="color:#1a3d6d;">Impact sur le projet</h2>
+    <div style="margin-bottom:10px; font-size:13px; color:#555;">
+      Référence : <select id="refProjet" style="display:inline-block; width:auto; padding:4px 10px; font-size:13px;">
+        <option value="vente">Vente totale (contrat original)</option>
+        <option value="total">Total actuel (avec extras déjà cumulés)</option>
+      </select>
+    </div>
+    <div class="summary-grid">
+      <div class="lbl">Valeur de référence :</div>
+      <div class="val" id="impactRef">0,00 $</div>
+      <div class="lbl">Extras déjà cumulés :</div>
+      <div class="val" id="impactExtraCumul">0,00 $</div>
+      <div class="lbl"><strong>Nouvel extra (ce calcul) :</strong></div>
+      <div class="val" id="impactNouveauExtra" style="color:#2a9d4f; font-weight:700;">0,00 $</div>
+      <div class="lbl"><strong>% de cet extra / référence :</strong></div>
+      <div class="val big" id="impactPct" style="color:#2a9d4f;">0,0 %</div>
+      <div class="lbl" style="color:#888">Nouveau cumul d'extras :</div>
+      <div class="val" id="impactCumulNouveau" style="color:#888">0,00 $</div>
+      <div class="lbl" style="color:#888">% cumul total / référence :</div>
+      <div class="val" id="impactCumulPct" style="color:#888">0,0 %</div>
+      <div class="lbl"><strong>Nouveau total projet :</strong></div>
+      <div class="val big" id="impactNouveauTotal" style="color:#1a3d6d;">0,00 $</div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card no-print-search">
+    <h2>Notes / Justification</h2>
+    <textarea id="notes" rows="3" placeholder="Détails sur la raison de cet extra, contexte, etc."></textarea>
+  </div>
+
+  <!-- Actions -->
+  <div class="card no-print">
+    <div class="buttons">
+      <button class="action success" onclick="genererEmail()">
+        Générer email vers CP (sauvegarde auto)
+      </button>
+      <button class="action" onclick="sauvegarderEnCours()">
+        Sauvegarder dans le suivi
+      </button>
+      <button class="action" onclick="window.print()">
+        Imprimer / PDF
+      </button>
+      <button class="action secondary" onclick="copierTexte()">
+        Copier
+      </button>
+      <button class="action danger" onclick="reinitialiser()">
+        Réinitialiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Suivi des Extras -->
+  <div class="card no-print" id="suiviCard">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px; border-bottom:2px solid #1a3d6d; padding-bottom:6px;">
+      <h2 style="border:none; margin:0; padding:0; font-size:16px; color:#1a3d6d;">Suivi des Extras <span id="suiviCount" style="background:#1a3d6d; color:white; font-size:11px; padding:2px 8px; border-radius:10px;">0</span></h2>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button onclick="lierOneDrive()" style="background:#0078d4; color:white; border:none; padding:8px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;" title="Créer/lier un fichier suivi.json dans OneDrive — sync auto entre PCs">☁️ Lier OneDrive</button>
+        <button onclick="chargerDeOneDrive()" style="background:#0078d4; color:white; border:none; padding:8px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;" title="Charger un fichier suivi.json existant depuis OneDrive">📂 Ouvrir OneDrive</button>
+        <button onclick="resetSuivi()" style="background:#fce8e8; color:#c33; border:none; padding:8px 12px; border-radius:6px; font-size:12px; cursor:pointer; font-weight:600;">🗑 Vider</button>
+      </div>
+    </div>
+    <div id="oneDriveStatus" style="font-size:12px; color:#0078d4; font-weight:600; margin-bottom:4px;"></div>
+    <div id="suiviStatus" style="font-size:12px; color:#666; margin-bottom:8px;"></div>
+
+    <!-- Stats -->
+    <div id="suiviStats" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-bottom:14px;"></div>
+
+    <!-- Filtres -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+      <div style="flex:2; min-width:180px;">
+        <label style="font-size:11px;">Recherche</label>
+        <input type="text" id="suiviSearch" placeholder="N° extra, projet, client, demandeur...">
+      </div>
+      <div style="flex:1; min-width:130px;">
+        <label style="font-size:11px;">Filtrer par état</label>
+        <select id="suiviFilterEtat">
+          <option value="">Tous</option>
+          <option value="En cours">En cours</option>
+          <option value="Envoyé au client">Envoyé au client</option>
+          <option value="Accepté">Accepté</option>
+          <option value="Refusé">Refusé</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tableau -->
+    <div class="table-wrap">
+      <table id="suiviTable">
+        <thead>
+          <tr>
+            <th title="Budget ajouté au CRM et Estimme">✓ CRM</th>
+            <th>N°</th>
+            <th>Projet</th>
+            <th>Client</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Demandé par</th>
+            <th class="num">Montant ($)</th>
+            <th>État</th>
+            <th>Notes</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="suiviBody">
+          <tr><td colspan="11" class="empty">Aucun extra dans le suivi.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:8px; font-size:11px; color:#666; font-style:italic;">
+      💡 La case "✓ CRM" s'active uniquement pour les extras <strong>Acceptés</strong>. Cochez-la quand vous avez ajouté le budget dans le CRM et Estimme.
+    </div>
+  </div>
+
+</div>
+
+<script>
+const DATA = {"extras": [{"nom": "Bassin de captation", "unite": "un.", "prix_base": 1669.29, "prix_sans_marge": 834.645, "type": "extra"}, {"nom": "Delta MS", "unite": "pi", "prix_base": 4.431, "prix_sans_marge": 2.2155, "type": "extra"}, {"nom": "Doublage solive", "unite": "solive", "prix_base": 463.344, "prix_sans_marge": 231.672, "type": "extra"}, {"nom": "Drain intérieur", "unite": "pi", "prix_base": 231.672, "prix_sans_marge": 115.836, "type": "extra"}, {"nom": "Équerre à balcon", "unite": "un.", "prix_base": 694.617, "prix_sans_marge": 347.3085, "type": "extra"}, {"nom": "Empattement (colonne incl.) 24x24", "unite": "un.", "prix_base": 1608.768, "prix_sans_marge": 804.384, "type": "extra"}, {"nom": "Empattement (colonne incl.) 42x42", "unite": "un.", "prix_base": 2377.788, "prix_sans_marge": 1188.894, "type": "extra"}, {"nom": "Fissure extérieure (excavation exclue)", "unite": "un.", "prix_base": 675.066, "prix_sans_marge": 337.533, "type": "extra"}, {"nom": "Fissure injection (une seule)", "unite": "un.", "prix_base": 1764.0, "prix_sans_marge": 882.0, "type": "extra"}, {"nom": "Fissure injection (plusieurs)", "unite": "un.", "prix_base": 1543.5, "prix_sans_marge": 771.75, "type": "extra"}, {"nom": "Uréthane giclée", "unite": "pi2", "prix_base": 7.035, "prix_sans_marge": 3.5175, "type": "extra"}, {"nom": "Équipe d’excavation  (pelle, loader, camion, 2 hommes)", "unite": "h", "prix_base": 1067.85, "prix_sans_marge": 533.925, "type": "extra"}, {"nom": "Margelle", "unite": "un.", "prix_base": 872.34, "prix_sans_marge": 436.17, "type": "extra"}, {"nom": "Sous-œuvre mur de béton", "unite": "pi.", "prix_base": 358.6048, "prix_sans_marge": 179.3024, "type": "extra"}, {"nom": "Remplacer carré de bois", "unite": "pi2", "prix_base": 122.1655, "prix_sans_marge": 61.0828, "type": "extra"}, {"nom": "Chef d'équipe (fondation / structure)", "unite": "hre", "prix_base": 157.5, "prix_sans_marge": 0, "type": "extra"}, {"nom": "Manoeuvre spécialisé (fondation / structure)", "unite": "hre", "prix_base": 120.855, "prix_sans_marge": 0, "type": "extra"}], "catalogue": [{"code": "REFACIER", "description": "ACIER", "unite": "", "prix_commercial": 0.93, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS2x250", "description": "Tube HSS 2\" x 2\" x 1/4\"", "unite": "pi", "prix_commercial": 5.0313, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS2.5x125", "description": "Tube HSS 2.5'' x 2.5'' x 1/8''", "unite": "pi", "prix_commercial": 3.6363, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS3x188", "description": "Tube HSS 3\" x 3\" x 3/16\"", "unite": "pi", "prix_commercial": 6.4077, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS3x250", "description": "Tube HSS 3\" x 3\" x 1/4\"", "unite": "pi", "prix_commercial": 8.1933, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS4x188", "description": "Tube HSS 4\" x 4\" x 3/16\"", "unite": "pi", "prix_commercial": 8.7885, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS4x250", "description": "Tube HSS 4\" x 4\" x 1/4\"", "unite": "pi", "prix_commercial": 11.3553, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS5x188", "description": "Tube HSS 5\" x 5\" x 3/16\"", "unite": "pi", "prix_commercial": 11.16, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS5x250", "description": "Tube HSS 5\" x 5\" x 1/4 \"", "unite": "pi", "prix_commercial": 14.5266, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS6x188", "description": "Tube HSS 6\" x 6\" x 3/16\"", "unite": "pi", "prix_commercial": 13.5315, "prix_residentiel": 0, "type": "catalogue"}, {"code": "HSS6x250", "description": "Tube HSS 6\" x 6\" x 1/4\"", "unite": "pi", "prix_commercial": 17.6886, "prix_residentiel": 0, "type": "catalogue"}, {"code": "POW10x22", "description": "Poutre H w10 x 22 lbs", "unite": "pi", "prix_commercial": 19.79, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BERPB", "description": "Rallonge à Poutre 48\"", "unite": "un", "prix_commercial": 73.34, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "ÉTRIERS", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE24E", "description": "Étrier 2\"", "unite": "un", "prix_commercial": 86.11, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE34E", "description": "Étrier 3\"", "unite": "un", "prix_commercial": 103.87, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE44E", "description": "Étrier 4\"", "unite": "un", "prix_commercial": 123.82, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE66E", "description": "Étrier 6\" 6 trous", "unite": "un", "prix_commercial": 205.61, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE24EC", "description": "Étrier à colonne 2''", "unite": "un", "prix_commercial": 121.73, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "SABOT-ÉTRIERS", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE24SE", "description": "Sabot-étrier 2\"", "unite": "un", "prix_commercial": 130.8, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE34SE", "description": "Sabot-étrier 3\"", "unite": "un", "prix_commercial": 130.8, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE44SE", "description": "Sabot-étrier 4\"", "unite": "un", "prix_commercial": 167.41, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE64SE", "description": "Sabot-étrier 6\"", "unite": "un", "prix_commercial": 446.46, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "SABOTS", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE6Sx24", "description": "6 pouces (régulier, 24\")", "unite": "un", "prix_commercial": 257.59, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE6Sx30", "description": "6 pouces (long, 30\")", "unite": "un", "prix_commercial": 288.63, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE4S", "description": "4 pouces", "unite": "un", "prix_commercial": 138.79, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE3S", "description": "3 pouces", "unite": "un", "prix_commercial": 112.37, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE4ESD", "description": "à dalle 4 pouces", "unite": "un", "prix_commercial": 133.5, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE3ESD", "description": "à dalle 3 pouces", "unite": "un", "prix_commercial": 122.2, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE2ESD", "description": "à dalle 2 pouces", "unite": "un", "prix_commercial": 85.75, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "MANCHONS / SUPPORTS À SEMELLE", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEMO4X24", "description": "Manchon avec oreilles 4\"", "unite": "un", "prix_commercial": 120.49, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEMO3X24", "description": "Manchon avec oreilles 3\"", "unite": "un", "prix_commercial": 102.01, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEMO2X24", "description": "Manchon avec oreilles 2\"", "unite": "un", "prix_commercial": 86.39, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEEQD", "description": "Attaches à semelle", "unite": "un", "prix_commercial": 32.9, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "ACCESSOIRES ACIER", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE5SJD", "description": "Serre-joint droit", "unite": "un", "prix_commercial": 67.16, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE5SJCI", "description": "Serre-joint coin intérieur", "unite": "un.", "prix_commercial": 60.77, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BE5SJC", "description": "Serre-joint coin extérieur", "unite": "un", "prix_commercial": 72.41, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DOUILR", "description": "Douille de renforcement", "unite": "un", "prix_commercial": 106.69, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BED4-3", "description": "Douille réductrice 4\"-3\"", "unite": "un", "prix_commercial": 8.23, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BERAE", "description": "Rallonge Fer angle / Étrier 4\"x3\"", "unite": "un.", "prix_commercial": 9.68, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPL20X20", "description": "Plaque en acier 20'' x 20'' x 1/4''", "unite": "un.", "prix_commercial": 24.66, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPL10X20", "description": "Plaque 10\" x 20\" x 1/4\"", "unite": "un.", "prix_commercial": 20.24, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BESHIM", "description": "Cale (Shim) 1/2 x 3 1/2 x 6 ''", "unite": "un.", "prix_commercial": 5.69, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPM4.25", "description": "Union HSS 3 et 4 pouces (1/4\") Percution double", "unite": "un", "prix_commercial": 18.41, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEM3.25", "description": "Union HSS 3 x 3 x 1/4", "unite": "un", "prix_commercial": 12.24, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEM3.188", "description": "Union HSS 3 x 3 x 3/16", "unite": "un", "prix_commercial": 12.07, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEM4.25", "description": "Union HSS 4 x 4 x 1/4", "unite": "un", "prix_commercial": 14.24, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEM4.188", "description": "Union HSS 4 x 4 x 3/16", "unite": "un", "prix_commercial": 14.74, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEM6.188", "description": "Union HSS 6 x 6 x 3/16", "unite": "un", "prix_commercial": 28.69, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEP6", "description": "Plaque de bout HSS 6 pouces", "unite": "un", "prix_commercial": 5.5, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEP4X.25", "description": "Plaque de bout HSS 4 pouces", "unite": "un", "prix_commercial": 10.67, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEP3", "description": "Plaque de bout HSS 3 pouces", "unite": "un", "prix_commercial": 4.58, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPF", "description": "Plaque pour fissure à 4 trous", "unite": "un", "prix_commercial": 18.36, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPFC", "description": "Plaque à fissure en coin", "unite": "un", "prix_commercial": 14.72, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPSF7.6", "description": "Plaque de renfort 4'' L=7.5'", "unite": "un", "prix_commercial": 59.79, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPSF8.0", "description": "Plaque de renfort 4'' L=8'", "unite": "un", "prix_commercial": 65.12, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEPSF8.6", "description": "Plaque de renfort 4'' L=8.5''", "unite": "un", "prix_commercial": 67.08, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CH5.12", "description": "Channel 5\" x9 - 12 pi", "unite": "un.", "prix_commercial": 179.16, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CH5", "description": "Channel C5x9 au pied", "unite": "pi", "prix_commercial": 15.63, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CH8.10", "description": "Channel 8\" x 11.5 - 10 pi", "unite": "un", "prix_commercial": 103.4, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CH8", "description": "Channel C8x11,5 au pied", "unite": "pi", "prix_commercial": 10.34, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEAB4X4", "description": "Fer angle à briques 4\"x4\"", "unite": "un", "prix_commercial": 13.93, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEAB4X6", "description": "Fer angle à briques 4\"x6\"", "unite": "un", "prix_commercial": 22.08, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEAB4X42B", "description": "Fer angle à briques 4\"x4\" - 2 boul.", "unite": "un", "prix_commercial": 13.93, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEAB6X6", "description": "Fer angle à briques 6\"x6\"", "unite": "un", "prix_commercial": 25.79, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECF", "description": "Chanel 30\" pour fissure horizontale", "unite": "un", "prix_commercial": 42.44, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEEQB360X48", "description": "Équerres à balcon", "unite": "un", "prix_commercial": 171.36, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEEQP6X4X12", "description": "Équerres à poutre BEEQP  12''", "unite": "un", "prix_commercial": 50.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEEQP6X4X14", "description": "Équerres à poutre BEEQP 14''", "unite": "un", "prix_commercial": 52.93, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BEEQP6X4X16", "description": "Équerres à poutre BEEQP 16''", "unite": "un", "prix_commercial": 55.85, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BESEB3", "description": "Kit préfabriqué empattement 3''", "unite": "un", "prix_commercial": 81.91, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BESEB4", "description": "Kit préfabriqué empattement 4''", "unite": "un", "prix_commercial": 85.6, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BETDAT", "description": "Tirant BETD pour garage", "unite": "un", "prix_commercial": 250.77, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECAPH10X16", "description": "Plaque de tête (fraisée) 10''x16''", "unite": "un", "prix_commercial": 49.84, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECAPH10X8", "description": "Plaque de tête (fraisée) 8''x10''", "unite": "un", "prix_commercial": 34.34, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECAPHIM", "description": "Plaque de tête (fraisée) 3.5''x6''", "unite": "un", "prix_commercial": 7.66, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BETE2.5", "description": "Tête à vis 2.5 po", "unite": "un", "prix_commercial": 28.05, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BETE3", "description": "Tête à vis 3 po", "unite": "un", "prix_commercial": 29.23, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BETE4", "description": "Tête à vis 4 po", "unite": "un", "prix_commercial": 33.54, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECAPB2.5", "description": "Plaque de bas 2.5 po", "unite": "un", "prix_commercial": 23.14, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECAPB3", "description": "Plaque de bas 3 po", "unite": "un", "prix_commercial": 25.676, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BECAPB4", "description": "Plaque de bas 4 po", "unite": "un", "prix_commercial": 25.9, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "PLOMBERIE / DRAINS", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DRAIN", "description": "Drain français 4\" avec géotextile", "unite": "pi", "prix_commercial": 1.04, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DRAINSGEO", "description": "Drain 4'' sans géotextile", "unite": "pi", "prix_commercial": 0.81, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DRAIN3", "description": "Drain 3'' avec géotextile", "unite": "pi", "prix_commercial": 1.03, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TDRAIN", "description": "\"T\" pour drain français", "unite": "un", "prix_commercial": 8.4, "prix_residentiel": 0, "type": "catalogue"}, {"code": "UNIDRAIN", "description": "Union à drain français", "unite": "un", "prix_commercial": 3.59, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CHEDR", "description": "Cheminée de nettoyage (Drain) avec tuyaux rigide", "unite": "un", "prix_commercial": 189.41, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CAD3S", "description": "Drain linéaire 3 sections 10'-0''", "unite": "un", "prix_commercial": 114.99, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CAD40", "description": "Drain linéaire 1 section 40''", "unite": "un", "prix_commercial": 49.99, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CADED", "description": "Embout pour drain linéaire", "unite": "un", "prix_commercial": 4.49, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SCELTUB", "description": "Masterseal NP1 Limestone 300 mL", "unite": "un.", "prix_commercial": 8.77, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CAPJT", "description": "PVC snap cap 10'", "unite": "un.", "prix_commercial": 6.02, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BANDASP", "description": "Bande asphaltique 4\" x 10'", "unite": "un.", "prix_commercial": 10.12, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PUI", "description": "Fosse de retenue 12x12x12 avec couvert", "unite": "un", "prix_commercial": 40.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PUIST", "description": "Fosse de retenue 18x24x18", "unite": "un", "prix_commercial": 119.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PUIPR", "description": "Fosse de retenue 18x24x24", "unite": "un", "prix_commercial": 130.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PVDMS", "description": "Par vapeur Delta MS", "unite": "pi2", "prix_commercial": 0.68, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PV22M", "description": "Par vapeur VPS 22 Mil", "unite": "pi2", "prix_commercial": 0.7, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PUICE", "description": "Couvert étanche pour fosse", "unite": "un", "prix_commercial": 65.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PUICT", "description": "Couvert troué pour fosse", "unite": "un", "prix_commercial": 35.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ABSY", "description": "ABS coupé \"Y\"", "unite": "un", "prix_commercial": 16.39, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ABS3", "description": "Tuyau ABS 3\" - 4''", "unite": "pl", "prix_commercial": 6.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ABSFIT34", "description": "Fitting ABS 3\" - 4\"", "unite": "un", "prix_commercial": 16.39, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ABS1.5", "description": "Tuyau abs 1.5'' - 2''", "unite": "pl", "prix_commercial": 2.17, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ABSFIT1.5", "description": "Fitting ABS / BNQ 1.5\" - 2''", "unite": "un", "prix_commercial": 1.86, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BNQ4", "description": "BNQ 4'' plein et troué", "unite": "pl", "prix_commercial": 2.33, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BNQ3", "description": "Tuyau BNQ 3''", "unite": "pl", "prix_commercial": 2.95, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BNQFIT34", "description": "Fitting BNQ 3'' et 4 ''", "unite": "ch", "prix_commercial": 12.9, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "PLOMBERIE / DRAINS US", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02003", "description": "Drain Safe Edge", "unite": "un", "prix_commercial": 6.2737, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02012", "description": "Coin interne, Drain SD", "unite": "un", "prix_commercial": 19.5061, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02022", "description": "Coin externe, Drain SD", "unite": "un", "prix_commercial": 19.5061, "prix_residentiel": 0, "type": "catalogue"}, {"code": "06000-1A", "description": "Drain français 6\" sans géotextile", "unite": "pi", "prix_commercial": 2.5197, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02030Bx", "description": "Attaches SE", "unite": "un", "prix_commercial": 0.5689, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02050", "description": "Sortie, Drain SD", "unite": "un", "prix_commercial": 22.7571, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02051", "description": "Port d'inspection, Drain SD", "unite": "un", "prix_commercial": 23.2215, "prix_residentiel": 0, "type": "catalogue"}, {"code": "06000", "description": "Drain français 6\" avec géotextile", "unite": "pi", "prix_commercial": 2.8772, "prix_residentiel": 0, "type": "catalogue"}, {"code": "06001", "description": "Embouts, 6\"", "unite": "un", "prix_commercial": 6.0969, "prix_residentiel": 0, "type": "catalogue"}, {"code": "06009 - CS", "description": "Port d'inspection, coupleur 6\" à 6\"", "unite": "un", "prix_commercial": 23.6266, "prix_residentiel": 0, "type": "catalogue"}, {"code": "06004-CS", "description": "Sorties, 6\"", "unite": "un", "prix_commercial": 13.1021, "prix_residentiel": 0, "type": "catalogue"}, {"code": "06002", "description": "Coupleur, 6\"", "unite": "un", "prix_commercial": 13.1021, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0600N-CS", "description": "6 ''  90 degrés", "unite": "un", "prix_commercial": 18.1721, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02002", "description": "SafeEdge, low profile", "unite": "un", "prix_commercial": 4.9346, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02010LP", "description": "SafeEdge, low profile coin intérieur", "unite": "un", "prix_commercial": 13.8245, "prix_residentiel": 0, "type": "catalogue"}, {"code": "02020LP", "description": "SafeEdge, low profile coin intérieur", "unite": "un", "prix_commercial": 13.8245, "prix_residentiel": 0, "type": "catalogue"}, {"code": "3CMD3-GN", "description": "Sortie Drain Vert", "unite": "un", "prix_commercial": 39.9874, "prix_residentiel": 0, "type": "catalogue"}, {"code": "FR1", "description": "Sorite Drain Blanc Antigel", "unite": "un", "prix_commercial": 15.481, "prix_residentiel": 0, "type": "catalogue"}, {"code": "G-C22", "description": "Ensemble de décharge de tuyau principal", "unite": "un", "prix_commercial": 30.8072, "prix_residentiel": 0, "type": "catalogue"}, {"code": "061012", "description": "Scellant 1 1/2 pouce (BAAKP10050)", "unite": "un", "prix_commercial": 11.6107, "prix_residentiel": 0, "type": "catalogue"}, {"code": "061012C", "description": "Bouchon de cordon (BAGROM11-1)", "unite": "un", "prix_commercial": 13.9329, "prix_residentiel": 0, "type": "catalogue"}, {"code": "GSF2", "description": "Pied pour pompe simple", "unite": "un", "prix_commercial": 12.0597, "prix_residentiel": 0, "type": "catalogue"}, {"code": "4030180", "description": "Santa Fe avancé 2", "unite": "un", "prix_commercial": 1529.5228, "prix_residentiel": 0, "type": "catalogue"}, {"code": "03150", "description": "Ins90mil doublure, 58\" x 125'", "unite": "pi2", "prix_commercial": 0.61, "prix_residentiel": 0, "type": "catalogue"}, {"code": "03126", "description": "Combo Liner, 58\" x 62'; 1 rouleau = 300p carré", "unite": "pi2", "prix_commercial": 0.9805, "prix_residentiel": 0, "type": "catalogue"}, {"code": "7130-30", "description": "Poly tape blanc 3\"x60 verges", "unite": "un", "prix_commercial": 16.0693, "prix_residentiel": 0, "type": "catalogue"}, {"code": "03045", "description": "Doublure plancher, 22mil", "unite": "pi2", "prix_commercial": 0.6321, "prix_residentiel": 0, "type": "catalogue"}, {"code": "03013", "description": "Ruban adhésif double côté EmeSeal 1\"x45'", "unite": "rl", "prix_commercial": 15.1714, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TAPE", "description": "Ruban adhésif, PVC 2\" x 108'", "unite": "rl", "prix_commercial": 12.9421, "prix_residentiel": 0, "type": "catalogue"}, {"code": "GB1290", "description": "Batterie sans entretien", "unite": "un", "prix_commercial": 259.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "G1033-DFC2", "description": "Pompe, \"Pro Series\" 1/3 HP - DFC2", "unite": "un", "prix_commercial": 237.4631, "prix_residentiel": 0, "type": "catalogue"}, {"code": "GPSC22", "description": "Système combiné 1/3 HP 1850 + batterie", "unite": "un", "prix_commercial": 1098.2221, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "ARMATURES", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ARM15", "description": "Armature 15M", "unite": "pi", "prix_commercial": 0.81, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ARM15L24X30", "description": "Armature en L pour longrine 24\"x30\"", "unite": "un.", "prix_commercial": 3.62, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ARM15X18", "description": "Armature 15M (18 pouces)", "unite": "un.", "prix_commercial": 1.11, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TREI6X6(9/9)", "description": "Treillis métallique", "unite": "pc", "prix_commercial": 0.31, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ARM10", "description": "Armature 10M", "unite": "pi", "prix_commercial": 0.57, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "DIVERS", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR361222", "description": "Margelle 36\" x 12\" x 22\"H", "unite": "un.", "prix_commercial": 41.82, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR421222", "description": "Margelle 42\" x 12\" x 22\" H", "unite": "un.", "prix_commercial": 49.07, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR492222", "description": "Margelle 49\" x 22\" x 22\" H", "unite": "un.", "prix_commercial": 61.8, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR542222", "description": "Margelle 54\" x 22\" x 22\" H", "unite": "un.", "prix_commercial": 70.68, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR622222", "description": "Margelle 62\" x 22\" x 22\" H", "unite": "un.", "prix_commercial": 80.03, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR702222", "description": "Margelle 70\" x 22\" x 22\"H", "unite": "un.", "prix_commercial": 99.86, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR742222", "description": "Margelle 74\" x 22\" x 22\"H", "unite": "un.", "prix_commercial": 112.86, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR842222", "description": "Margelle 84\" x 22\" x 22\"H", "unite": "un.", "prix_commercial": 131.2, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MAR902222", "description": "Margelle 90\" x 22\" x 22\" H", "unite": "un.", "prix_commercial": 142.03, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SACP20", "description": "Sac de pierres 20 mm nette / poussière de roche (30kg)", "unite": "un", "prix_commercial": 4.2, "prix_residentiel": 0, "type": "catalogue"}, {"code": "3551368", "description": "Boulon Hilti 5/8\" x 5.5\"", "unite": "un", "prix_commercial": 2.51, "prix_residentiel": 0, "type": "catalogue"}, {"code": "3551372", "description": "Boulon Hilti 3/4' 'x 7\"", "unite": "un", "prix_commercial": 4.47, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TB12x512", "description": "True bolts 1/2\" x 5 1/2\"", "unite": "un", "prix_commercial": 0.49, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TB38X334", "description": "True bolts 3/8\" x 3 3/4\"", "unite": "un", "prix_commercial": 0.53, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x212", "description": "Tire fond 1/2\" X 2 1/2\"", "unite": "un", "prix_commercial": 0.26, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x4", "description": "Tire-fond 1/2\" x 4\"", "unite": "un", "prix_commercial": 0.24, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x6", "description": "Tire fond 1/2'' x 6''", "unite": "un", "prix_commercial": 0.49, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x8", "description": "Tire fond 1/2'' x 8''", "unite": "un", "prix_commercial": 0.54, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x10", "description": "Tire fond 1/2'' X 10''", "unite": "un", "prix_commercial": 0.79, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x12", "description": "Tire fond 1/2\" X 12\"", "unite": "un", "prix_commercial": 0.93, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TF12x14", "description": "Tire fond 1/2\" X 14\"", "unite": "un", "prix_commercial": 6.3, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS1x6x12", "description": "Bois 1\"x6\"x12'", "unite": "un", "prix_commercial": 5.88, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x4x8", "description": "Bois 2\"x4\"x8'", "unite": "un", "prix_commercial": 3.96, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x4x12", "description": "Bois 2\"x4\"x12'", "unite": "un", "prix_commercial": 6.29, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x6x12", "description": "Bois 2\"x6\"x12'", "unite": "un", "prix_commercial": 12.08, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x8x12", "description": "Bois 2\"x8\"x12'", "unite": "un", "prix_commercial": 16.18, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x10x8", "description": "Bois 2\"x10\"x8'", "unite": "un", "prix_commercial": 15.43, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x10x12", "description": "Bois 2\"x10\"x12'", "unite": "un", "prix_commercial": 30.32, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS2x12x12", "description": "Bois 2\"x12\"x12'", "unite": "un", "prix_commercial": 42.77, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS3x8x8B", "description": "Bois 3\"x8\"x8'", "unite": "un", "prix_commercial": 19.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BOIS4x4x12", "description": "Bois 4\"x4\"x12'-0\"", "unite": "un", "prix_commercial": 12.28, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CP34", "description": "Contreplaqué 4' x 8' x 3/4\"", "unite": "un", "prix_commercial": 59.97, "prix_residentiel": 0, "type": "catalogue"}, {"code": "OSB4x8x2332", "description": "Aspenite 4' x 8' x 3/4\"", "unite": "un", "prix_commercial": 59.2, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MISOLANT", "description": "Isolant styrofoam 2'' bleu 24\"x96\"", "unite": "un", "prix_commercial": 25.38, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MISODALLE", "description": "Isolant giclé 1.5\" à 2\" sous dalle de béton", "unite": "pc", "prix_commercial": 2.25, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CANTEX", "description": "Cantex (5 gallon)", "unite": "5 GAL", "prix_commercial": 144.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "EFOND", "description": "Enduit à fondation", "unite": "5 GAL", "prix_commercial": 48.95, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SOLIN", "description": "Solin 16\"", "unite": "pl", "prix_commercial": 0.81, "prix_residentiel": 0, "type": "catalogue"}, {"code": "LETANCH", "description": "Lame d'étanchéité type 5", "unite": "pl", "prix_commercial": 2.17, "prix_residentiel": 0, "type": "catalogue"}, {"code": "BENTONITE", "description": "Boudin de Bentonite", "unite": "pl", "prix_commercial": 2.97, "prix_residentiel": 0, "type": "catalogue"}, {"code": "AQUA77006", "description": "Aqua-Bloc 770-06", "unite": "5 GAL", "prix_commercial": 255.19, "prix_residentiel": 0, "type": "catalogue"}, {"code": "LATSTU", "description": "Latte mur stucco galvanisé", "unite": "un", "prix_commercial": 13.04, "prix_residentiel": 0, "type": "catalogue"}, {"code": "GEO", "description": "Membrane géotextile", "unite": "pc", "prix_commercial": 0.15, "prix_residentiel": 0, "type": "catalogue"}, {"code": "POLY", "description": "Polythène en rouleau 6 ml", "unite": "pc", "prix_commercial": 0.06, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CIMSAB", "description": "Ciment Sable 30 kg", "unite": "un", "prix_commercial": 7.55, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CIMCRE", "description": "Ciment a crépi 30 kg", "unite": "un", "prix_commercial": 15.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CPOR", "description": "Ciment Portland 25 kg", "unite": "un", "prix_commercial": 15.69, "prix_residentiel": 0, "type": "catalogue"}, {"code": "CMACO", "description": "Ciment Maconnerie 25 kg", "unite": "un", "prix_commercial": 15.69, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SMOR", "description": "Sable a mortier 30 kg", "unite": "un", "prix_commercial": 2.99, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SK223", "description": "Sika repair 223  17 kg", "unite": "un", "prix_commercial": 37.29, "prix_residentiel": 0, "type": "catalogue"}, {"code": "PLPRE", "description": "PL Premium Adhésif (300 ml)", "unite": "un", "prix_commercial": 8.75, "prix_residentiel": 0, "type": "catalogue"}, {"code": "URETHA", "description": "Uréthane", "unite": "un", "prix_commercial": 12.83, "prix_residentiel": 0, "type": "catalogue"}, {"code": "EPOXY10", "description": "Epoxy Hilti 16.9oz", "unite": "un", "prix_commercial": 15.86, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DIWI12", "description": "Diwidag 1/2\" (pour coffrage)", "unite": "pi", "prix_commercial": 0.85, "prix_residentiel": 0, "type": "catalogue"}, {"code": "MDMS", "description": "Imperméabilisation Delta MS", "unite": "pi2", "prix_commercial": 0.75, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SIMPPOLY", "description": "Imperméabilisation Polyurea simple", "unite": "pi2", "prix_commercial": 2.85, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SIMPPOLYM", "description": "Imperméabilisation Polyurea moëllon", "unite": "pi2", "prix_commercial": 3.85, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SIMPHLM", "description": "Imperméabilisation HLM 5000 (base de pétrole)", "unite": "pi2", "prix_commercial": 1.75, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SIMPPD", "description": "Panneau drainant DPI", "unite": "pi2", "prix_commercial": 0.97, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DEPOT", "description": "Frais de dépotoir terre", "unite": "tm", "prix_commercial": 6.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "DEPOB", "description": "Frais de dépotoir béton", "unite": "tm", "prix_commercial": 22.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VSBET", "description": "Sac de béton 30 kg", "unite": "un", "prix_commercial": 5.3, "prix_residentiel": 0, "type": "catalogue"}, {"code": "GOUEPOX", "description": "Goujons 18\" @ 24\" c/c avec Epoxy", "unite": "un", "prix_commercial": 11.55, "prix_residentiel": 0, "type": "catalogue"}, {"code": "URETCH", "description": "Chaudière uréthane 1 gallon", "unite": "gal", "prix_commercial": 161.7, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "MAIN-D'OEUVRE", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "RCEE", "description": "Chef d'équipe (pieux)", "unite": "hre", "prix_commercial": 79.6, "prix_residentiel": 70.0, "type": "catalogue"}, {"code": "RMAPI", "description": "Manoeuvre spécialisé (pieux)", "unite": "hre", "prix_commercial": 66.0, "prix_residentiel": 57.55, "type": "catalogue"}, {"code": "RCEEFS", "description": "Chef d'équipe (fondation / structure)", "unite": "hre", "prix_commercial": 83.24, "prix_residentiel": 75.0, "type": "catalogue"}, {"code": "RMAFS", "description": "Manoeuvre spécialisé (fondation / structure)", "unite": "hre", "prix_commercial": 66.0, "prix_residentiel": 57.55, "type": "catalogue"}, {"code": "RCEEDE", "description": "Chef d'équipe (division eau)", "unite": "hre", "prix_commercial": 80.0, "prix_residentiel": 73.31, "type": "catalogue"}, {"code": "RMADE", "description": "Manoeuvre spécialisé (division eau)", "unite": "hre", "prix_commercial": 66.0, "prix_residentiel": 57.55, "type": "catalogue"}, {"code": "RCEEP", "description": "Chef d'équipe (pyrite)", "unite": "hre", "prix_commercial": 80.0, "prix_residentiel": 73.31, "type": "catalogue"}, {"code": "RMAP", "description": "Manoeuvre spécialisé (pyrite)", "unite": "hre", "prix_commercial": 66.0, "prix_residentiel": 57.55, "type": "catalogue"}, {"code": "RPEN", "description": "Pension par journée de travail", "unite": "jour", "prix_commercial": 175.0, "prix_residentiel": 175.0, "type": "catalogue"}, {"code": "CP", "description": "Chargé de projet", "unite": "hre", "prix_commercial": 75.0, "prix_residentiel": 75.0, "type": "catalogue"}, {"code": "RCDEB", "description": "Commissaire aux débris", "unite": "hre", "prix_commercial": 85.0, "prix_residentiel": 85.0, "type": "catalogue"}, {"code": "RI", "description": "Imperméabilisation polyurea", "unite": "hre", "prix_commercial": 70.69, "prix_residentiel": 70.69, "type": "catalogue"}, {"code": "SARP", "description": "Certificat d'arpenteur", "unite": "Forf", "prix_commercial": 700.0, "prix_residentiel": 700.0, "type": "catalogue"}, {"code": "SINGB", "description": "Ingénierie de base", "unite": "Forf", "prix_commercial": 775.0, "prix_residentiel": 775.0, "type": "catalogue"}, {"code": "SINGS", "description": "Ingénierie de base + subvention", "unite": "Forf", "prix_commercial": 1425.0, "prix_residentiel": 1425.0, "type": "catalogue"}, {"code": "SINGCS", "description": "Ingénierie de base (creusage sous-sol)", "unite": "Forf", "prix_commercial": 1650.0, "prix_residentiel": 1650.0, "type": "catalogue"}, {"code": "SINGF", "description": "Ingénierie de base (fondation)", "unite": "Forf", "prix_commercial": 850.0, "prix_residentiel": 850.0, "type": "catalogue"}, {"code": "SINGSTRUCT", "description": "Ingénierie de base (structure)", "unite": "Forf", "prix_commercial": 600.0, "prix_residentiel": 600.0, "type": "catalogue"}, {"code": "SINGREFAU", "description": "Ingénierie de base (réfection ou autre)", "unite": "Forf", "prix_commercial": 750.0, "prix_residentiel": 750.0, "type": "catalogue"}, {"code": "ISPMM", "description": "Inspection photographique des murs mitoyens réalisés par Bisson Expert avant le début des travaux", "unite": "Forf", "prix_commercial": 300.0, "prix_residentiel": 300.0, "type": "catalogue"}, {"code": "0", "description": "ÉQUIPEMENTS - SOUS-TRAITANTS", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TCA12", "description": "Camion 12 roues", "unite": "hre", "prix_commercial": 141.5, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TLO", "description": "Loader sur roue", "unite": "hre", "prix_commercial": 112.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TPELM", "description": "Pelle hydraulique avec marteau", "unite": "hre", "prix_commercial": 147.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TPEL1", "description": "Pelle hydraulique type KX-91 & +", "unite": "hre", "prix_commercial": 109.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TPEL", "description": "Pelle hydraulique type < KX-61", "unite": "hre", "prix_commercial": 109.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "TDEP", "description": "Déplacement machinerie", "unite": "hre", "prix_commercial": 130.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SCBT", "description": "Sciage de béton", "unite": "Forf", "prix_commercial": 1050.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SPOM", "description": "Pompe à béton", "unite": "hre", "prix_commercial": 168.25, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25", "description": "Béton de ciment 25 Mpa", "unite": "m3", "prix_commercial": 513.4, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P1.5", "description": "Béton de ciment 25 Mpa - 1.5 m3", "unite": "m3", "prix_commercial": 415.2, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P2", "description": "Béton de ciment 25 Mpa - 2 m3", "unite": "m3", "prix_commercial": 350.3, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P2.5", "description": "Béton de ciment 25 Mpa - 2.5 m3", "unite": "m3", "prix_commercial": 322.24, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P3", "description": "Béton de ciment 25 Mpa - 3 m3", "unite": "m3", "prix_commercial": 294.13, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P3.5", "description": "Béton de ciment 25 Mpa - 3.5 m3", "unite": "m3", "prix_commercial": 285.26, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P4", "description": "Béton de ciment 25 Mpa - 4 m3", "unite": "m3", "prix_commercial": 259.5, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P4.5", "description": "Béton de ciment 25 Mpa - 4.5 m3", "unite": "m3", "prix_commercial": 254.58, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB25P5", "description": "Béton de ciment 25 Mpa - 5+ m3", "unite": "m3", "prix_commercial": 240.12, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30", "description": "Béton de ciment 30 Mpa", "unite": "m3", "prix_commercial": 522.6, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P1.5", "description": "Béton de ciment 30 Mpa - 1.5 m3", "unite": "m3", "prix_commercial": 418.67, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P2", "description": "Béton de ciment 30 Mpa - 2 m3", "unite": "m3", "prix_commercial": 358.7, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P2.5", "description": "Béton de ciment 30 Mpa - 2.5 m3", "unite": "m3", "prix_commercial": 330.08, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P3", "description": "Béton de ciment 30 Mpa - 3 m3", "unite": "m3", "prix_commercial": 295.6, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P3.5", "description": "Béton de ciment 30 Mpa - 3.5 m3", "unite": "m3", "prix_commercial": 283.03, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P4", "description": "Béton de ciment 30 Mpa - 4 m3", "unite": "m3", "prix_commercial": 259.75, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P4.5", "description": "Béton de ciment 30 Mpa - 4.5 m3", "unite": "m3", "prix_commercial": 255.02, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VB30P5", "description": "Béton de ciment 30 Mpa - 5+ m3", "unite": "m3", "prix_commercial": 242.16, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SIMG", "description": "Imperméabilisation goudron", "unite": "pi2", "prix_commercial": 2.6, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SIMU", "description": "Polymère uréthane pour fissure", "unite": "un", "prix_commercial": 525.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SFIT", "description": "Finisseur de béton à la truelle", "unite": "pc", "prix_commercial": 1.44, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SFIM", "description": "Finisseur de béton à la machine", "unite": "pc", "prix_commercial": 1.9, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SCON2", "description": "Conteneur 20 verges", "unite": "un", "prix_commercial": 900.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "SCON1", "description": "Conteneur 10 verges", "unite": "un", "prix_commercial": 700.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "ISOURET", "description": "Uréthane vrac", "unite": "pi2", "prix_commercial": 3.35, "prix_residentiel": 0, "type": "catalogue"}, {"code": "0", "description": "MATÉRIAUX EN VRAC", "unite": "", "prix_commercial": 0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VP20", "description": "Pierre 20 mm nette", "unite": "tm", "prix_commercial": 26.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VP20D", "description": "Pierre DB 20 mm nette", "unite": "tm", "prix_commercial": 28.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VPSS", "description": "Pierre 20 mm nette (lanceur pierres)", "unite": "tm", "prix_commercial": 44.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VPDSS", "description": "Pierre DB 20 mm nette (lanceur pierres)", "unite": "tm", "prix_commercial": 47.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VCRIB", "description": "Criblure de pierre", "unite": "tm", "prix_commercial": 24.5, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VTV", "description": "Terre végétale", "unite": "tm", "prix_commercial": 9.0, "prix_residentiel": 0, "type": "catalogue"}, {"code": "VBSP", "description": "Superplastifiant", "unite": "m3", "prix_commercial": 15.0, "prix_residentiel": 0, "type": "catalogue"}]};
+let selected = [];
+const PROJECTS = [{"no_contrat":"1181-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Projet Hôtel Notre-Dame Sylvain Allard","adresse":"10, Notre-Dame Est à Montréal","vendeur":"Étienne Desmeules","cee":"Dany Michaud","cp":"Étienne Desmeules","total":1522365.56,"extra":434365.56,"vente_total":1088000.0},{"no_contrat":"1187-25","etat":"Travaux arrêtés","type":"11-Pieux hydrauliques","client":"Ismael Leduc","adresse":"4355, Lanaudière à Montréal","vendeur":"Derick Pelletier","cee":"Félix Daudelin","cp":"Étienne Desmeules","total":263796.92,"extra":-123003.08,"vente_total":386800.0},{"no_contrat":"0977-25","etat":"Travaux arrêtés","type":"33-Creusage de sous-sol","client":"Benoit Caron","adresse":"5448, Lafond à Montréal","vendeur":"Stéphane Taillefer","cee":"Éric Desgroseillers","cp":"Ramzi Hosni","total":330854.53,"extra":66198.0,"vente_total":264656.53},{"no_contrat":"1161-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Construction Landreville Lucier Alex Landreville","adresse":"3841-3847, Saint-Hubert à Montréal","vendeur":"Étienne Desmeules","cee":"Félix Daudelin","cp":"Étienne Desmeules","total":84786.01,"extra":-15213.99,"vente_total":100000.0},{"no_contrat":"1229-25","etat":"Travaux arrêtés","type":"11-Pieux hydrauliques","client":"Ginette Cere-Dyotte","adresse":"4241-4243, De Brébeuf à Montréal","vendeur":"Normand Grondin","cee":"Martin Dumais","cp":"Justin Tremblay-Houde","total":75465.0,"extra":27765.0,"vente_total":47700.0},{"no_contrat":"1223-25","etat":"Travaux arrêtés","type":"41-Structure","client":"Minh Lien Trinh","adresse":"6292, D’aragon à Montreal","vendeur":"Derick Pelletier","cee":"Stéphane Bissonnette","cp":"Richard St-Jean","total":53300.0,"extra":0.0,"vente_total":53300.0},{"no_contrat":"1292-26","etat":"Travaux arrêtés","type":"11-Pieux hydrauliques","client":"Mélissa Ricard Savard","adresse":"4365-4369B, De La Roche à Montréal","vendeur":"Derick Pelletier","cee":"Jimmy Tremblay","cp":"Gabriel Primeau-Dufresne","total":193525.0,"extra":5025.0,"vente_total":188500.0},{"no_contrat":"1137-25","etat":"Travaux arrêtés","type":"11-Pieux hydrauliques","client":"Alexandre Larouche-Maltais","adresse":"3704-3706, Av Laval à Montréal","vendeur":"Derick Pelletier","cee":"Paul Lafleur","cp":"Ramzi Hosni","total":40310.0,"extra":960.0,"vente_total":39350.0},{"no_contrat":"1119-25","etat":"Travaux en cours","type":"39-Réfection","client":"Nicolas Desrosiers","adresse":"8125-8127, Boyer à Montreal","vendeur":"Derick Pelletier","cee":"Frédéric Taillon","cp":"Richard St-Jean","total":41723.0,"extra":413.0,"vente_total":41310.0},{"no_contrat":"1234-25","etat":"Travaux en cours","type":"33-Creusage de sous-sol","client":"Marc-André Jean","adresse":"3955, Gertrude à Montréal","vendeur":"Stéphane Taillefer","cee":"Éric Desgroseillers","cp":"Gabriel Primeau-Dufresne","total":197503.0,"extra":23006.0,"vente_total":174497.0},{"no_contrat":"1375-26","etat":"Travaux en cours","type":"18-Pieux intérieurs","client":"Construction Gaia A/S Gabriel Plante","adresse":"4088-4108, Av Du Parc-La Fontaine à Montréal","vendeur":"Stéphane Taillefer","cee":"Michel Bouthillier","cp":"Justin Tremblay-Houde","total":93910.0,"extra":1110.0,"vente_total":92800.0},{"no_contrat":"1053-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Roxane Robitaille","adresse":"1850-1854, Théodore à Montréal","vendeur":"Derick Pelletier","cee":"Martin Dumais","cp":"Gabriel Primeau-Dufresne","total":71800.0,"extra":0.0,"vente_total":71800.0},{"no_contrat":"1247-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Alexandra Capistran","adresse":"4449-4453, Chapleau à Montreal","vendeur":"Derick Pelletier","cee":"Marc Lamoureux","cp":"Richard St-Jean","total":63046.75,"extra":8096.75,"vente_total":54950.0},{"no_contrat":"1249-25","etat":"Travaux arrêtés","type":"11-Pieux hydrauliques","client":"Luc Noiseux","adresse":"1275, Beatty à Montréal","vendeur":"Antoine Carrière","cee":"Steve Raymond","cp":"Ramzi Hosni","total":50459.29,"extra":1369.2,"vente_total":49090.09},{"no_contrat":"1226-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Constantin Ciudotariu","adresse":"5881-5885, Av Coolbrook à Montréal","vendeur":"Andrew Stewart","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":36469.0,"extra":7269.0,"vente_total":29200.0},{"no_contrat":"1105-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Edward Resutek","adresse":"2671-2675, Av Gascon à Montréal","vendeur":"Derick Pelletier","cee":"Paul Lafleur","cp":"Richard St-Jean","total":19500.0,"extra":0.0,"vente_total":19500.0},{"no_contrat":"1338-26","etat":"Travaux en cours","type":"72-Drain extérieur","client":"Maude Verdon","adresse":"3480, Park à Saint-Hubert","vendeur":"Antoine Carrière","cee":"Steve Raymond","cp":"Ramzi Hosni","total":37092.0,"extra":1426.0,"vente_total":35666.0},{"no_contrat":"1279-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Linda Cohen","adresse":"5871-5875, Coolbrook à Montréal","vendeur":"Andrew Stewart","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":34900.0,"extra":0.0,"vente_total":34900.0},{"no_contrat":"1282-25","etat":"Travaux en cours","type":"18-Pieux intérieurs","client":"Anne Parneix","adresse":"3930-3934, Berri à Montréal","vendeur":"Derick Pelletier","cee":"Anthony Cote","cp":"Richard St-Jean","total":82160.0,"extra":18360.0,"vente_total":63800.0},{"no_contrat":"1264-25","etat":"Travaux arrêtés","type":"11-Pieux hydrauliques","client":"Déborah Licha","adresse":"4357-4361, Saint-Hubert à Montréal","vendeur":"Derick Pelletier","cee":"Christopher England-Bédard","cp":"Justin Tremblay-Houde","total":54000.0,"extra":22200.0,"vente_total":31800.0},{"no_contrat":"0780-24","etat":"Travaux en cours","type":"12-Pieux hyd. complexes","client":"Danny Madani","adresse":"3697à 3701, Drolet à Montréal","vendeur":"Normand Grondin","cee":"Christopher England-Bédard","cp":"Justin Tremblay-Houde","total":24543.0,"extra":2443.0,"vente_total":22100.0},{"no_contrat":"1151-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Alexandre Laramee","adresse":"1826-1828, Saint-André à Montréal","vendeur":"Derick Pelletier","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":44000.0,"extra":2500.0,"vente_total":41500.0},{"no_contrat":"1277-25","etat":"Travaux en cours","type":"44- Structure et pieux","client":"Maria Fazari","adresse":"4233-4235, Chambord à Montreal","vendeur":"Derick Pelletier","cee":"Stéphane Bissonnette","cp":"Richard St-Jean","total":23800.0,"extra":3300.0,"vente_total":20500.0},{"no_contrat":"1262-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"SDC 3697-3701 Drolet A/S Danny Madani","adresse":"3697-3701A, Drolet à Montréal","vendeur":"Normand Grondin","cee":"Christopher England-Bédard","cp":"Justin Tremblay-Houde","total":33037.0,"extra":1237.0,"vente_total":31800.0},{"no_contrat":"1193-25","etat":"","type":"11-Pieux hydrauliques","client":"Josée Charbonneau","adresse":"4258 à 4262, Christophe Colomb à Montréal","vendeur":"Derick Pelletier","cee":"Frédéric Taillon","cp":"Richard St-Jean","total":37500.0,"extra":0.0,"vente_total":37500.0},{"no_contrat":"1126-25","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Michel Rodier","adresse":"1825-1829, Fullum à Montréal","vendeur":"Derick Pelletier","cee":"Gabriel Bisson","cp":"Justin Tremblay-Houde","total":45450.0,"extra":500.0,"vente_total":44950.0},{"no_contrat":"1305-26","etat":"Travaux en cours","type":"11-Pieux hydrauliques","client":"Line Breton","adresse":"1090, Honoré-Beaugrand à Montréal","vendeur":"Derick Pelletier","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":28548.0,"extra":15298.0,"vente_total":13250.0},{"no_contrat":"0478-21","etat":"","type":"12-Pieux hyd. complexes","client":"Boris Collignon","adresse":"3993-3997, St-Hubert à Montréal","vendeur":"Normand Grondin","cee":"Steve Raymond","cp":"Ramzi Hosni","total":1600.0,"extra":-20600.0,"vente_total":22200.0},{"no_contrat":"1306-26","etat":"","type":"11-Pieux hydrauliques","client":"Stefan Lebel","adresse":"1120, Honoré-Beaugrand à Montréal","vendeur":"Derick Pelletier","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":13250.0,"extra":0.0,"vente_total":13250.0},{"no_contrat":"1318-26","etat":"","type":"11-Pieux hydrauliques","client":"Romain Puig","adresse":"4567-4571, Saint-Jacques à Montréal","vendeur":"Danny St-Pierre","cee":"Frédéric Taillon","cp":"Richard St-Jean","total":224200.0,"extra":0.0,"vente_total":224200.0},{"no_contrat":"1241-25","etat":"","type":"31-Remplacement fond. simple","client":"On Side Après Sinistre A/S Dany Trottier","adresse":"215, 1re Rue à Saint-Jean-Sur-Richelieu","vendeur":"Stéphane Taillefer","cee":"Martin Dumais","cp":"Gabriel Primeau-Dufresne","total":118785.0,"extra":0.0,"vente_total":118785.0},{"no_contrat":"1260-25","etat":"","type":"72-Drain extérieur","client":"Madeleine St-Gelais","adresse":"5933-5935, 23e Avenue à Montréal","vendeur":"Stéphane Taillefer","cee":"Steve Raymond","cp":"Ramzi Hosni","total":30470.0,"extra":4670.0,"vente_total":25800.0},{"no_contrat":"1009-25","etat":"","type":"31-Remplacement fond. simple","client":"Nancy Leclerc","adresse":"7741-7743, Saint-Gérard à Montréal","vendeur":"Derick Pelletier","cee":"Jimmy Tremblay","cp":"Gabriel Primeau-Dufresne","total":42500.0,"extra":0.0,"vente_total":42500.0},{"no_contrat":"1402-26","etat":"","type":"15-Pieux pour décontamination","client":"Benoit Leblanc","adresse":"216-222, 100e Avenue à Saint-Jérôme","vendeur":"HOUSE","cee":"Félix Daudelin","cp":"Richard St-Jean","total":18875.0,"extra":0.0,"vente_total":18875.0},{"no_contrat":"1369-26","etat":"","type":"62-Pyrite garage","client":"Michel Duchaine","adresse":"10, Lalemant à Châteauguay","vendeur":"Antoine Carrière","cee":"Steve Raymond","cp":"Ramzi Hosni","total":33594.05,"extra":0.0,"vente_total":33594.05},{"no_contrat":"1212-25","etat":"","type":"11-Pieux hydrauliques","client":"Florin Ionica","adresse":"280-284, Av Des Pins Est à Montréal","vendeur":"Derick Pelletier","cee":"Marc Lamoureux","cp":"Richard St-Jean","total":45200.0,"extra":0.0,"vente_total":45200.0},{"no_contrat":"1289-25","etat":"","type":"11-Pieux hydrauliques","client":"Production Paleka Inc A/S Philippe Bertrand","adresse":"4140-4144, Av Des Érables à Montréal","vendeur":"Derick Pelletier","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":22950.0,"extra":0.0,"vente_total":22950.0},{"no_contrat":"1035-25","etat":"","type":"31-Remplacement fond. simple","client":"Marie-Ève Tremblay","adresse":"5, Poissant à Salaberry-De-Valleyfield","vendeur":"Andrew Stewart","cee":"Michel Bouthillier","cp":"Justin Tremblay-Houde","total":61890.0,"extra":0.0,"vente_total":61890.0},{"no_contrat":"1164-25","etat":"","type":"11-Pieux hydrauliques","client":"Rénovation Angers Danick Hébert","adresse":"6033, Notre-Dame Est à Montréal","vendeur":"Derick Pelletier","cee":"Anthony Cote","cp":"Richard St-Jean","total":49700.0,"extra":4200.0,"vente_total":45500.0},{"no_contrat":"0919-25","etat":"","type":"41-Structure","client":"Philippe Nguyen","adresse":"795-801, Galt à Montréal","vendeur":"Derick Pelletier","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":26600.0,"extra":2150.0,"vente_total":24450.0},{"no_contrat":"1398-26","etat":"","type":"73-Drain intérieur","client":"Lorin Krolik","adresse":"23, Av Winchester à Montréal","vendeur":"Andrew Stewart","cee":"Michel Bouthillier","cp":"Justin Tremblay-Houde","total":22600.0,"extra":0.0,"vente_total":22600.0},{"no_contrat":"1280-25","etat":"","type":"11-Pieux hydrauliques","client":"Pascal Cardinal","adresse":"38, Desmarteau à Boucherville","vendeur":"Derick Pelletier","cee":"Steve Raymond","cp":"Richard St-Jean","total":38500.0,"extra":0.0,"vente_total":38500.0},{"no_contrat":"1296-26","etat":"","type":"11-Pieux hydrauliques","client":"Michel Corbeil","adresse":"2930, Av Desaulniers à Saint-Hyacinthe","vendeur":"Antoine Carrière","cee":"Gabriel Bisson","cp":"Gabriel Primeau-Dufresne","total":45172.48,"extra":3700.0,"vente_total":41472.48},{"no_contrat":"1256-25","etat":"","type":"11-Pieux hydrauliques","client":"École Foi et Mission A/S Alain Mongeau","adresse":"4326-4330, Berri à Montréal","vendeur":"Derick Pelletier","cee":"Paul Lafleur","cp":"Justin Tremblay-Houde","total":74050.0,"extra":2200.0,"vente_total":71850.0},{"no_contrat":"1206-25","etat":"","type":"11-Pieux hydrauliques","client":"Marc Le Bourdais","adresse":"938, Salvail à Repentigny","vendeur":"Danny St-Pierre","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":29900.0,"extra":0.0,"vente_total":29900.0},{"no_contrat":"1102-25","etat":"","type":"11-Pieux hydrauliques","client":"Philippe Limoges-Ratté","adresse":"4454-4460, Fullum à Montréal","vendeur":"Normand Grondin","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":24800.0,"extra":0.0,"vente_total":24800.0},{"no_contrat":"1287-25","etat":"","type":"61-Pyrite sous-sol","client":"Pierre De Chevigny","adresse":"8055, De Marseille à Montréal","vendeur":"Danny St-Pierre","cee":"Dany Michaud","cp":"Ramzi Hosni","total":43800.0,"extra":0.0,"vente_total":43800.0},{"no_contrat":"1299-26","etat":"","type":"31-Remplacement fond. simple","client":"Mathieu Malouin","adresse":"2341-2343, Coupal à Montréal","vendeur":"Derick Pelletier","cee":"Éric Desgroseillers","cp":"Gabriel Primeau-Dufresne","total":53800.0,"extra":0.0,"vente_total":53800.0},{"no_contrat":"1300-26","etat":"","type":"31-Remplacement fond. simple","client":"Camilo Garcia","adresse":"2333-2335, Coupal à Montréal","vendeur":"Derick Pelletier","cee":"Éric Desgroseillers","cp":"Gabriel Primeau-Dufresne","total":44500.0,"extra":0.0,"vente_total":44500.0},{"no_contrat":"1200-25","etat":"","type":"11-Pieux hydrauliques","client":"Valmi Dufour-Lussier","adresse":"9161, Av. Souligny à Montréal","vendeur":"Danny St-Pierre","cee":"Marc Lamoureux","cp":"Richard St-Jean","total":96960.0,"extra":0.0,"vente_total":96960.0},{"no_contrat":"1326-26","etat":"","type":"11-Pieux hydrauliques","client":"Helen Athanassiadis","adresse":"3438, Hutchison à Montréal","vendeur":"Stéphane Taillefer","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":54900.0,"extra":900.0,"vente_total":54000.0},{"no_contrat":"1307-26","etat":"","type":"32-Remplacement de fond. complexe","client":"Daniel Daigneault","adresse":"5544-5552, 2e Avenue à Montréal","vendeur":"Derick Pelletier","cee":"Henry Green","cp":"Gabriel Primeau-Dufresne","total":46500.0,"extra":0.0,"vente_total":46500.0},{"no_contrat":"1345-26","etat":"","type":"44- Structure et pieux","client":"Jocelyn Lemay","adresse":"2115-2123, Dézéry à Montréal","vendeur":"Derick Pelletier","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":5900.0,"extra":0.0,"vente_total":5900.0},{"no_contrat":"1231-25","etat":"","type":"11-Pieux hydrauliques","client":"Claude Picotte","adresse":"1277, 6e Avenue à Montréal","vendeur":"Danny St-Pierre","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":56300.0,"extra":0.0,"vente_total":56300.0},{"no_contrat":"1157-25","etat":"","type":"11-Pieux hydrauliques","client":"Albert Biti","adresse":"17, Place Jason à Candiac","vendeur":"Antoine Carrière","cee":"Christopher England-Bédard","cp":"Justin Tremblay-Houde","total":26572.0,"extra":835.0,"vente_total":25737.0},{"no_contrat":"1012-25","etat":"","type":"63-Pyrite sous-sol et garage","client":"Bhushan Bhuvanagiri","adresse":"2630-2636, Modugno à Montréal","vendeur":"Andrew Stewart","cee":"Anthony Cote","cp":"Richard St-Jean","total":0.0,"extra":-65800.0,"vente_total":65800.0},{"no_contrat":"1346-26","etat":"","type":"11-Pieux hydrauliques","client":"Fasla Malika Zemmouri","adresse":"3070, Av Malo à Brossard","vendeur":"Antoine Carrière","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":46925.0,"extra":0.0,"vente_total":46925.0},{"no_contrat":"1215-25","etat":"","type":"11-Pieux hydrauliques","client":"SDC 3507 à 3511 Av De Lorimier A/S Robert Daudelin","adresse":"3507-3511, Av De Lorimier à Montréal","vendeur":"Normand Grondin","cee":"Félix Daudelin","cp":"Ramzi Hosni","total":77900.0,"extra":0.0,"vente_total":77900.0},{"no_contrat":"1197-25","etat":"","type":"12-Pieux hyd. complexes","client":"Geneviève Lahens","adresse":"3900-3904, Av Laval à Montréal","vendeur":"Normand Grondin","cee":"Frédéric Taillon","cp":"Richard St-Jean","total":30900.0,"extra":0.0,"vente_total":30900.0},{"no_contrat":"1387-26","etat":"","type":"72-Drain extérieur","client":"Sébastien Potvin","adresse":"5015, Boul Westley à Saint-Hubert","vendeur":"Antoine Carrière","cee":"Dany Michaud","cp":"Ramzi Hosni","total":29185.0,"extra":0.0,"vente_total":29185.0},{"no_contrat":"1333-26","etat":"","type":"11-Pieux hydrauliques","client":"Lucien Picard","adresse":"228, Victoria à Saint-Constant","vendeur":"Antoine Carrière","cee":"Stéphane Bissonnette","cp":"Richard St-Jean","total":34258.41,"extra":0.0,"vente_total":34258.41},{"no_contrat":"1266-25","etat":"","type":"11-Pieux hydrauliques","client":"Jean Bouchard","adresse":"1550-1558, Marie-Anne à Montréal","vendeur":"Normand Grondin","cee":"Stéphane Bissonnette","cp":"Richard St-Jean","total":36935.0,"extra":535.0,"vente_total":36400.0},{"no_contrat":"1228-25","etat":"","type":"11-Pieux hydrauliques","client":"John-Nicolas Morello","adresse":"2070, De Bruxelles à Montréal","vendeur":"Danny St-Pierre","cee":"Anthony Cote","cp":"Richard St-Jean","total":78200.0,"extra":0.0,"vente_total":78200.0},{"no_contrat":"1203-25","etat":"","type":"11-Pieux hydrauliques","client":"Tao Li","adresse":"3546-3552, De Bordeaux à Montréal","vendeur":"Normand Grondin","cee":"Paul Lafleur","cp":"Justin Tremblay-Houde","total":36500.0,"extra":0.0,"vente_total":36500.0},{"no_contrat":"1216-25","etat":"","type":"11-Pieux hydrauliques","client":"Jean-Claude Roche","adresse":"3554-3558, De Bordeaux à Montral","vendeur":"Normand Grondin","cee":"Paul Lafleur","cp":"Justin Tremblay-Houde","total":24500.0,"extra":0.0,"vente_total":24500.0},{"no_contrat":"1080-25","etat":"","type":"31-Remplacement fond. simple","client":"Benjamin Combeaud","adresse":"7932-7936, Av Henri-Julien à Montréal","vendeur":"Stéphane Taillefer","cee":"Henry Green","cp":"Gabriel Primeau-Dufresne","total":0.0,"extra":-100000.0,"vente_total":100000.0},{"no_contrat":"1155-25","etat":"","type":"11-Pieux hydrauliques","client":"Cédric Gras","adresse":"4222-4226, Av Des Érables à Montréal","vendeur":"Normand Grondin","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":48765.0,"extra":965.0,"vente_total":47800.0},{"no_contrat":"1301-26","etat":"","type":"41-Structure","client":"Emilie Auger","adresse":"3711-3715, Sainte-Famille à Montréal","vendeur":"Derick Pelletier","cee":"Michel Bouthillier","cp":"Justin Tremblay-Houde","total":24500.0,"extra":0.0,"vente_total":24500.0},{"no_contrat":"1196-25","etat":"","type":"11-Pieux hydrauliques","client":"Jean-François Joly","adresse":"101, Chauveau à Repentigny","vendeur":"Danny St-Pierre","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":112860.0,"extra":0.0,"vente_total":112860.0},{"no_contrat":"1038-25","etat":"","type":"31-Remplacement fond. simple","client":"Anne Chiasson","adresse":"386, Chemin Du Fleuve à Coteau-Du-Lac","vendeur":"Andrew Stewart","cee":"Martin Bordeleau","cp":"Gabriel Primeau-Dufresne","total":0.0,"extra":-53450.0,"vente_total":53450.0},{"no_contrat":"1341-26","etat":"","type":"11-Pieux hydrauliques","client":"Zachary Massicotte","adresse":"121, Louis-H.-La fontaine Sud à Boucherville","vendeur":"Antoine Carrière","cee":"Stéphane Bissonnette","cp":"Richard St-Jean","total":106543.0,"extra":0.0,"vente_total":106543.0},{"no_contrat":"1259-25","etat":"","type":"11-Pieux hydrauliques","client":"Pascal Côté","adresse":"643, Masson à Repentigny","vendeur":"Danny St-Pierre","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":30800.0,"extra":0.0,"vente_total":30800.0},{"no_contrat":"1400-26","etat":"","type":"73-Drain intérieur","client":"Nilton Jorge","adresse":"4981, Joseph-Ponrouge à Saint-Hubert","vendeur":"Antoine Carrière","cee":"Michel Bouthillier","cp":"Justin Tremblay-Houde","total":20050.0,"extra":0.0,"vente_total":20050.0},{"no_contrat":"1357-26","etat":"","type":"72-Drain extérieur","client":"Alexandre Beaudoin","adresse":"276, Villeneuve à Saint-Eustache","vendeur":"Andrew Stewart","cee":"Dany Michaud","cp":"Ramzi Hosni","total":34223.0,"extra":0.0,"vente_total":34223.0},{"no_contrat":"1288-26","etat":"","type":"11-Pieux hydrauliques","client":"Ablitmit (John) Abdughopur","adresse":"8404-8410, Oscar-Roland à Montréal","vendeur":"Andrew Stewart","cee":"Marc Lamoureux","cp":"Richard St-Jean","total":98610.0,"extra":2800.0,"vente_total":95810.0},{"no_contrat":"1283-25","etat":"","type":"11-Pieux hydrauliques","client":"Société BLC A/S Jean-Robert Benoit","adresse":"2265-2285, Hochelaga à Montréal","vendeur":"Normand Grondin","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":4000.0,"extra":-37950.0,"vente_total":41950.0},{"no_contrat":"1298-26","etat":"","type":"11-Pieux hydrauliques","client":"Réjean Lussier","adresse":"17350, Av Centrale à Saint-Hyacinthe","vendeur":"Antoine Carrière","cee":"Anthony Cote","cp":"Richard St-Jean","total":94256.2,"extra":0.0,"vente_total":94256.2},{"no_contrat":"1286-25","etat":"","type":"11-Pieux hydrauliques","client":"I Cheng","adresse":"9048, Croissant Rimouski à Brossard","vendeur":"Stéphane Taillefer","cee":"Paul Lafleur","cp":"Justin Tremblay-Houde","total":142686.0,"extra":0.0,"vente_total":142686.0},{"no_contrat":"1252-25","etat":"","type":"41-Structure","client":"Micheline Paquin","adresse":"80, De L'Hotel De ville à Vaudreuil-Dorion","vendeur":"Andrew Stewart","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":23900.0,"extra":0.0,"vente_total":23900.0},{"no_contrat":"1319-26","etat":"","type":"64-Pyrite à la main","client":"Nathalie Gasser","adresse":"7762, Place De Bayeaux à Montréal","vendeur":"Danny St-Pierre","cee":"Michel Bouthillier","cp":"Justin Tremblay-Houde","total":45830.0,"extra":0.0,"vente_total":45830.0},{"no_contrat":"1368-26","etat":"","type":"11-Pieux hydrauliques","client":"Janique Dutremble","adresse":"667, Bonair à Beloeil","vendeur":"Stéphane Taillefer","cee":"Gabriel Bisson","cp":"Gabriel Primeau-Dufresne","total":106210.0,"extra":0.0,"vente_total":106210.0},{"no_contrat":"1295-26","etat":"","type":"11-Pieux hydrauliques","client":"PRÊTS VIA INC A/S Claude Parent","adresse":"4298-4318, Garnier à Montréal","vendeur":"Derick Pelletier","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":81500.0,"extra":0.0,"vente_total":81500.0},{"no_contrat":"1205-25","etat":"","type":"11-Pieux hydrauliques","client":"Richard Dupont","adresse":"4870, Boul Gaetan-Boucher à Saint-Hubert","vendeur":"Andrew Stewart","cee":"Marc Lamoureux","cp":"Richard St-Jean","total":69096.51,"extra":1696.51,"vente_total":67400.0},{"no_contrat":"1358-26","etat":"","type":"11-Pieux hydrauliques","client":"Élise Guilbault","adresse":"5225, Forester à Saint-Hubert","vendeur":"Andrew Stewart","cee":"Stéphane Bissonnette","cp":"Richard St-Jean","total":46720.0,"extra":0.0,"vente_total":46720.0},{"no_contrat":"1328-26","etat":"","type":"18-Pieux intérieurs","client":"Xavier Chrétien","adresse":"4392-4396, De Bordeaux à Montréal","vendeur":"Derick Pelletier","cee":"Christopher England-Bédard","cp":"Justin Tremblay-Houde","total":14500.0,"extra":0.0,"vente_total":14500.0},{"no_contrat":"1332-26","etat":"","type":"61-Pyrite sous-sol","client":"Marie-Claire Laliberté","adresse":"1017, L’Acadie à Chambly","vendeur":"Antoine Carrière","cee":"Steve Raymond","cp":"Ramzi Hosni","total":66602.0,"extra":12400.0,"vente_total":54202.0},{"no_contrat":"1232-25","etat":"","type":"11-Pieux hydrauliques","client":"Véronica Barahona","adresse":"12488-12488A, Gratton à Montréal","vendeur":"Danny St-Pierre","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":56980.0,"extra":0.0,"vente_total":56980.0},{"no_contrat":"1314-26","etat":"","type":"11-Pieux hydrauliques","client":"Janet Dench","adresse":"4424-4426, Rivard à Montréal","vendeur":"Normand Grondin","cee":"Paul Lafleur","cp":"Justin Tremblay-Houde","total":30600.0,"extra":0.0,"vente_total":30600.0},{"no_contrat":"1363-26","etat":"","type":"11-Pieux hydrauliques","client":"Richard Pelletier","adresse":"3790, Népal à Brossard","vendeur":"Stéphane Taillefer","cee":"Paul Lafleur","cp":"Justin Tremblay-Houde","total":37825.0,"extra":0.0,"vente_total":37825.0},{"no_contrat":"1201-25","etat":"","type":"11-Pieux hydrauliques","client":"Cédric Dumoulin","adresse":"77, Av Trenton à Mont-Royal","vendeur":"Andrew Stewart","cee":"Patrick Bernier","cp":"Richard St-Jean","total":10380.0,"extra":-38220.0,"vente_total":48600.0},{"no_contrat":"1302-26","etat":"","type":"44- Structure et pieux","client":"Karen Binmahar","adresse":"1575-1579, Marie-Anne Est à Montréal","vendeur":"Normand Grondin","cee":"Jean-Nicolas Picard","cp":"Justin Tremblay-Houde","total":24500.0,"extra":0.0,"vente_total":24500.0},{"no_contrat":"1290-25","etat":"","type":"11-Pieux hydrauliques","client":"Normand Soulard","adresse":"569-577, Nicolet à Montréal","vendeur":"Derick Pelletier","cee":"Frédéric Taillon","cp":"Richard St-Jean","total":51000.0,"extra":0.0,"vente_total":51000.0},{"no_contrat":"0885-24","etat":"","type":"12-Pieux hyd. complexes","client":"Vinac Construction Annick K Shimbi Ing","adresse":"4006, Boul Dorchester Ouest à Montréal","vendeur":"Derick Pelletier","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":22500.0,"extra":-127500.0,"vente_total":150000.0},{"no_contrat":"1273-25","etat":"","type":"11-Pieux hydrauliques","client":"Yvan Cloutier","adresse":"2024-2034, Av Laurier Est à Montréal","vendeur":"Normand Grondin","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":40500.0,"extra":0.0,"vente_total":40500.0},{"no_contrat":"1297-25","etat":"","type":"11-Pieux hydrauliques","client":"Pierre Lavoie","adresse":"6, Des Sorbiers à Saint-Basile-Le-Grand","vendeur":"Stéphane Taillefer","cee":"Kevin Richer-D'Amour","cp":"Richard St-Jean","total":90255.4,"extra":0.0,"vente_total":90255.4},{"no_contrat":"0405-20","etat":"","type":"41-Structure","client":"Jean-François Joyal","adresse":"5031, Resther à Montréal","vendeur":"Normand Grondin","cee":"Martin Dumais","cp":"Gabriel Primeau-Dufresne","total":21975.0,"extra":0.0,"vente_total":21975.0},{"no_contrat":"1003-25","etat":"","type":"42-Dalle de béton","client":"Christophe Ménard","adresse":"2831-2833, De Rouen à Montréal","vendeur":"Normand Grondin","cee":"Marc Lamoureux","cp":"Ramzi Hosni","total":29850.0,"extra":0.0,"vente_total":29850.0},{"no_contrat":"0712-24","etat":"","type":"41-Structure","client":"Syndicat de copropriété 3080 Av Linton Geneviève Boutin","adresse":"3080, Av Linton à Montréal","vendeur":"Stéphane Taillefer","cee":"Frédérik Lampron-Gariépy","cp":"Justin Tremblay-Houde","total":25000.0,"extra":0.0,"vente_total":25000.0},{"no_contrat":"0742-24","etat":"","type":"73-Drain intérieur","client":"Solal Vallée","adresse":"1910, Croissant Turgeon à Brossard","vendeur":"Antoine Carrière","cee":"Randy Garcia","cp":"Richard St-Jean","total":21879.13,"extra":0.0,"vente_total":21879.13},{"no_contrat":"0150-22","etat":"","type":"31-Remplacement fond. simple","client":"Jean-Robert Benoit","adresse":"4063-4067, Parthenais à Montréal","vendeur":"Normand Grondin","cee":"Roger Masse","cp":"Gabriel Primeau-Dufresne","total":80300.0,"extra":-145300.0,"vente_total":225600.0},{"no_contrat":"0051-22","etat":"","type":"31-Remplacement fond. simple","client":"Chantal Côté","adresse":"1721, Bourbonnière à Montreal","vendeur":"Éric Tremblay","cee":"Martin Bordeleau","cp":"Gabriel Primeau-Dufresne","total":49285.0,"extra":-15000.0,"vente_total":64285.0},{"no_contrat":"1070-25","etat":"","type":"31-Remplacement fond. simple","client":"Les Entreprises Christian Arbour inc AS Simon Laplante / AS Jean-Benoit Lebel","adresse":"8600-8618, Av De L'Épée à Montréal","vendeur":"Danny St-Pierre","cee":"Robert Bisson","cp":"Gabriel Primeau-Dufresne","total":41570.0,"extra":0.0,"vente_total":41570.0},{"no_contrat":"1174-25","etat":"","type":"11-Pieux hydrauliques","client":"Sylvie Côté","adresse":"4372-4374, Boyer à Montréal","vendeur":"Derick Pelletier","cee":"Marc Lamoureux","cp":"Ramzi Hosni","total":39500.0,"extra":0.0,"vente_total":39500.0},{"no_contrat":"0792-24","etat":"","type":"12-Pieux hyd. complexes","client":"Richard Geoffrion","adresse":"4235- 4241, Messier à Montréal","vendeur":"Normand Grondin","cee":"Marc Lamoureux","cp":"Ramzi Hosni","total":0.0,"extra":-26200.0,"vente_total":26200.0},{"no_contrat":"1265-25","etat":"","type":"15-Pieux pour décontamination","client":"Danielle Dubreuil","adresse":"275, de l'Église à Napierville","vendeur":"HOUSE","cee":"Anthony Cote","cp":"Richard St-Jean","total":10900.0,"extra":0.0,"vente_total":10900.0},{"no_contrat":"1275-25","etat":"","type":"33-Creusage de sous-sol","client":"Tristan Hirsch","adresse":"4800-4804, De Verdun à Montréal","vendeur":"Andrew Stewart","cee":"Éric Desgroseillers","cp":"Gabriel Primeau-Dufresne","total":250000.0,"extra":0.0,"vente_total":250000.0}];
+
+
+const CP_NAME_TO_EMAIL = {
+  "justin tremblay-houde": "jthoude@bissonexpert.com",
+  "richard st-jean": "RSt-Jean@BissonExpert.com",
+  "gabriel primeau-dufresne": "gpdufresne@bissonexpert.com",
+  "jérémie gagnon": "jgagnon@BissonExpert.com",
+  "jeremie gagnon": "jgagnon@BissonExpert.com"
+};
+
+// Liste de projets ORIGINALE (intégrée). Sauvegarde aussi.
+const PROJECTS_ORIGINAL = PROJECTS.slice();
+let PROJECTS_LIVE = PROJECTS.slice();
+
+// === SUIVI DES EXTRAS ===
+const SUIVI_DEFAULT = [{"id":"EXT-001","projet":"1234-25","client":"Marc Andre","date":"2026-04-23","description":"","demandePar":"GP","qte":1.0,"prixUnit":0.0,"montant":19200.0,"etat":"Accepté","notes":""},{"id":"EXT-002","projet":"1247-25","client":"Alexandra","date":"27-04-2026","description":"","demandePar":"RS","qte":1.0,"prixUnit":0.0,"montant":5898.75,"etat":"Accepté","notes":""},{"id":"EXT-003","projet":"1212-25","client":"Florin","date":"16-04-2026","description":"","demandePar":"RS","qte":1.0,"prixUnit":0.0,"montant":874.0,"etat":"Envoyé au client","notes":""},{"id":"EXT-004","projet":"1338-26","client":"Maude","date":"06-05-2026","description":"","demandePar":"RH","qte":1.0,"prixUnit":0.0,"montant":2569.3,"etat":"Accepté","notes":""},{"id":"EXT-005","projet":"1151-25","client":"","date":"06-05-2026","description":"","demandePar":"RS","qte":1.0,"prixUnit":0.0,"montant":6100.0,"etat":"Envoyé au client","notes":""}];
+let SUIVI = SUIVI_DEFAULT.slice();
+try {
+  const ssto = localStorage.getItem('extras_suivi_v1');
+  if (ssto) {
+    const arr = JSON.parse(ssto);
+    if (Array.isArray(arr)) SUIVI = arr;
+  }
+} catch(e) {}
+function saveSuivi() {
+  try { localStorage.setItem('extras_suivi_v1', JSON.stringify(SUIVI)); } catch(e) {}
+  // Sync OneDrive si lié
+  if (window._oneDriveHandle) saveToOneDrive();
+}
+
+// === SYNC ONEDRIVE (File System Access API) ===
+let _oneDriveHandle = null;
+
+// IndexedDB pour persister le handle entre sessions
+function _idbOpen() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('extrasSync', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('handles');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function _idbStoreHandle(h) {
+  const db = await _idbOpen();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(h, 'oneDrive');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+async function _idbGetHandle() {
+  const db = await _idbOpen();
+  return new Promise((resolve) => {
+    const tx = db.transaction('handles', 'readonly');
+    const req = tx.objectStore('handles').get('oneDrive');
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => resolve(null);
+  });
+}
+async function _idbDeleteHandle() {
+  const db = await _idbOpen();
+  return new Promise((resolve) => {
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').delete('oneDrive');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+}
+
+function isFSASupported() {
+  return typeof window !== 'undefined' && 'showSaveFilePicker' in window;
+}
+
+async function lierOneDrive() {
+  if (!isFSASupported()) {
+    alert("Cette fonction nécessite Chrome ou Edge sur PC.");
+    return;
+  }
+  try {
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'suivi_extras.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    });
+    _oneDriveHandle = handle;
+    window._oneDriveHandle = handle;
+    await _idbStoreHandle(handle);
+    // Première écriture
+    await saveToOneDrive();
+    setOneDriveStatus('🔗 Lié à : ' + handle.name);
+  } catch(err) {
+    if (err.name !== 'AbortError') alert('Erreur : ' + err.message);
+  }
+}
+
+async function chargerDeOneDrive() {
+  if (!isFSASupported()) {
+    alert("Cette fonction nécessite Chrome ou Edge sur PC.");
+    return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    });
+    _oneDriveHandle = handle;
+    window._oneDriveHandle = handle;
+    await _idbStoreHandle(handle);
+    await loadFromOneDrive();
+    setOneDriveStatus('🔗 Lié à : ' + handle.name);
+  } catch(err) {
+    if (err.name !== 'AbortError') alert('Erreur : ' + err.message);
+  }
+}
+
+async function delierOneDrive() {
+  if (!confirm("Délier le fichier OneDrive? La sync s'arrêtera.")) return;
+  _oneDriveHandle = null;
+  window._oneDriveHandle = null;
+  await _idbDeleteHandle();
+  setOneDriveStatus('');
+}
+
+async function saveToOneDrive() {
+  if (!_oneDriveHandle) return;
+  try {
+    // Permission check
+    const perm = await _oneDriveHandle.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') {
+      const req = await _oneDriveHandle.requestPermission({ mode: 'readwrite' });
+      if (req !== 'granted') return;
+    }
+    const writable = await _oneDriveHandle.createWritable();
+    const payload = { version: 1, savedAt: new Date().toISOString(), suivi: SUIVI };
+    await writable.write(JSON.stringify(payload, null, 2));
+    await writable.close();
+    setOneDriveStatus('✓ Synchronisé : ' + new Date().toLocaleTimeString());
+  } catch(err) {
+    setOneDriveStatus('⚠ Sync échec : ' + err.message);
+  }
+}
+
+async function loadFromOneDrive() {
+  if (!_oneDriveHandle) return;
+  try {
+    const perm = await _oneDriveHandle.queryPermission({ mode: 'read' });
+    if (perm !== 'granted') {
+      const req = await _oneDriveHandle.requestPermission({ mode: 'read' });
+      if (req !== 'granted') return;
+    }
+    const file = await _oneDriveHandle.getFile();
+    const text = await file.text();
+    if (!text.trim()) return; // empty file
+    const data = JSON.parse(text);
+    if (data && Array.isArray(data.suivi)) {
+      SUIVI = data.suivi;
+      try { localStorage.setItem('extras_suivi_v1', JSON.stringify(SUIVI)); } catch(e) {}
+      renderSuivi();
+      setOneDriveStatus('✓ Chargé : ' + SUIVI.length + ' extras (' + (data.savedAt ? new Date(data.savedAt).toLocaleString() : 'sans date') + ')');
+    }
+  } catch(err) {
+    setOneDriveStatus('⚠ Lecture échec : ' + err.message);
+  }
+}
+
+function setOneDriveStatus(msg) {
+  const el = document.getElementById('oneDriveStatus');
+  if (el) el.textContent = msg;
+}
+
+// Tente de récupérer le handle au démarrage
+async function initOneDriveSync() {
+  if (!isFSASupported()) return;
+  try {
+    const h = await _idbGetHandle();
+    if (h) {
+      _oneDriveHandle = h;
+      window._oneDriveHandle = h;
+      const perm = await h.queryPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        await loadFromOneDrive();
+      } else {
+        setOneDriveStatus('🔗 ' + h.name + ' (cliquer "Synchroniser" pour autoriser)');
+      }
+    }
+  } catch(e) {}
+}
+
+// Filtre rapide via clic sur les cartes stats
+function filtrerEtat(etat) {
+  const sel = document.getElementById('suiviFilterEtat');
+  if (sel) sel.value = etat;
+  renderSuivi();
+  // Scroll vers le tableau
+  const tbl = document.getElementById('suiviTable');
+  if (tbl) tbl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function nextExtraId() {
+  let max = 0;
+  SUIVI.forEach(e => {
+    const m = (e.id || '').match(/EXT-(\d+)/);
+    if (m) max = Math.max(max, parseInt(m[1], 10));
+  });
+  return 'EXT-' + String(max + 1).padStart(3, '0');
+}
+
+function getCurrentExtraData() {
+  let st = 0;
+  selected.forEach(it => st += (it.qte * it.prixUnit));
+  const projet = document.getElementById('numContrat').value || '';
+  const client = document.getElementById('client').value || '';
+  const desc = selected.map(it => it.qte + ' x ' + it.nom).join(' ; ') || (document.getElementById('notes').value || '');
+  const demandeur = document.getElementById('vendeur').value || '';
+  const date = document.getElementById('dateExtra').value || new Date().toISOString().substring(0,10);
+  const notes = document.getElementById('notes').value || '';
+  return { projet, client, description: desc, demandePar: demandeur, date, montant: st, notes };
+}
+
+function sauvegarderEnCours() {
+  if (selected.length === 0 && !confirm('Aucun article sélectionné. Sauvegarder quand même un extra à 0$?')) return;
+  const data = getCurrentExtraData();
+  if (!data.projet) { alert('Saisissez un numéro de contrat avant de sauvegarder.'); return; }
+  ajouterAuSuivi(data, 'En cours');
+}
+
+function ajouterAuSuivi(data, etat) {
+  const newExtra = {
+    id: nextExtraId(),
+    projet: data.projet,
+    client: data.client,
+    date: data.date,
+    description: data.description,
+    demandePar: data.demandePar,
+    qte: 1,
+    prixUnit: data.montant,
+    montant: data.montant,
+    etat: etat || 'En cours',
+    notes: data.notes || ''
+  };
+  SUIVI.unshift(newExtra);
+  saveSuivi();
+  renderSuivi();
+  document.getElementById('suiviStatus').innerHTML = '<span style="color:#2a9d4f">✓ ' + newExtra.id + ' ajouté au suivi (' + etat + ')</span>';
+  setTimeout(() => { document.getElementById('suiviStatus').textContent = ''; }, 4000);
+}
+
+function updateSuivi(idx, field, val) {
+  if (SUIVI[idx]) { SUIVI[idx][field] = val; saveSuivi(); renderSuivi(); }
+}
+function deleteSuivi(idx) {
+  if (!confirm('Supprimer ' + SUIVI[idx].id + '?')) return;
+  SUIVI.splice(idx, 1);
+  saveSuivi();
+  renderSuivi();
+}
+function resetSuivi() {
+  if (!confirm('Vider tout le suivi? (Cette action est irréversible)')) return;
+  SUIVI = [];
+  saveSuivi();
+  renderSuivi();
+}
+
+function etatColor(e) {
+  return e === 'Accepté' ? '#2a9d4f' :
+         e === 'Refusé' ? '#c33' :
+         e === 'Envoyé au client' ? '#e8a93b' : '#6c757d';
+}
+
+function renderSuivi() {
+  const q = norm((document.getElementById('suiviSearch') || {}).value || '');
+  const filtreEtat = (document.getElementById('suiviFilterEtat') || {}).value || '';
+  document.getElementById('suiviCount').textContent = SUIVI.length;
+
+  // Stats
+  const stats = { 'En cours': {n:0, m:0}, 'Envoyé au client': {n:0, m:0}, 'Accepté': {n:0, m:0}, 'Refusé': {n:0, m:0} };
+  let totalAll = 0;
+  let aTraiter = { n: 0, m: 0 };
+  SUIVI.forEach(e => {
+    const m = parseFloat(e.montant)||0;
+    if (stats[e.etat]) { stats[e.etat].n++; stats[e.etat].m += m; }
+    totalAll += m;
+    if (e.etat === 'Accepté' && !e.budgetAjoute) { aTraiter.n++; aTraiter.m += m; }
+  });
+  const statsDiv = document.getElementById('suiviStats');
+  const activeFilter = filtreEtat;
+  statsDiv.innerHTML = Object.keys(stats).map(k => {
+    const s = stats[k]; const c = etatColor(k);
+    const active = activeFilter === k;
+    const bg = active ? c : 'white';
+    const txtColor = active ? 'white' : '#1a3d6d';
+    const lblColor = active ? 'rgba(255,255,255,.85)' : '#777';
+    const subColor = active ? 'rgba(255,255,255,.9)' : '#555';
+    return `<div onclick="filtrerEtat('${k}')" style="background:${bg}; border-left:4px solid ${c}; border-radius:6px; padding:8px 10px; cursor:pointer;">` +
+      `<div style="font-size:11px; color:${lblColor}; text-transform:uppercase; font-weight:600;">${k}</div>` +
+      `<div style="font-size:18px; font-weight:700; color:${txtColor};">${s.n} <span style="font-size:11px; opacity:.7; font-weight:400;">extras</span></div>` +
+      `<div style="font-size:13px; color:${subColor};">${fmt(s.m)}</div></div>`;
+  }).join('') +
+    `<div onclick="filtrerEtat('')" style="background:${activeFilter===''?'#1a3d6d':'#f5f7fa'}; color:${activeFilter===''?'white':'#1a3d6d'}; border-radius:6px; padding:8px 10px; cursor:pointer; border-left:4px solid #1a3d6d;">` +
+    '<div style="font-size:11px; opacity:.8; text-transform:uppercase; font-weight:600;">TOTAL</div>' +
+    '<div style="font-size:18px; font-weight:700;">'+SUIVI.length+' <span style="font-size:11px; opacity:.8; font-weight:400;">extras</span></div>' +
+    '<div style="font-size:13px;">'+fmt(totalAll)+'</div></div>' +
+    (aTraiter.n > 0 ? '<div style="background:#fff3cd; border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">' +
+      '<div style="font-size:11px; color:#b06800; text-transform:uppercase; font-weight:600;">⚠ À AJOUTER CRM</div>' +
+      '<div style="font-size:18px; font-weight:700; color:#ff6f00;">'+aTraiter.n+' <span style="font-size:11px; color:#b06800; font-weight:400;">extras</span></div>' +
+      '<div style="font-size:13px; color:#b06800;">'+fmt(aTraiter.m)+'</div></div>' : '');
+
+  // Filtre
+  const filtered = SUIVI.filter(e => {
+    if (filtreEtat && e.etat !== filtreEtat) return false;
+    if (q && !norm(e.id+' '+e.projet+' '+e.client+' '+e.description+' '+e.demandePar+' '+e.notes).includes(q)) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('suiviBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11" class="empty">'+(SUIVI.length===0?'Aucun extra dans le suivi.':'Aucun résultat avec ces filtres.')+'</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(e => {
+    const i = SUIVI.indexOf(e);
+    const c = etatColor(e.etat);
+    const etats = ['En cours','Envoyé au client','Accepté','Refusé'];
+    const sel = etats.map(et => '<option value="'+et+'"'+(et===e.etat?' selected':'')+'>'+et+'</option>').join('');
+    const isAccepted = e.etat === 'Accepté';
+    const checked = e.budgetAjoute ? 'checked' : '';
+    const disabled = isAccepted ? '' : 'disabled';
+    const rowStyle = (isAccepted && e.budgetAjoute) ? ' style="background:#eaf7ec;"' : '';
+    const checkboxCell = `<td data-label="✓ CRM" style="text-align:center;"><input type="checkbox" ${checked} ${disabled} onchange="updateSuivi(${i}, 'budgetAjoute', this.checked)" style="width:22px; height:22px; cursor:${isAccepted?'pointer':'not-allowed'};" title="${isAccepted?'Budget ajouté dans CRM et Estimme':'Disponible uniquement pour les extras Acceptés'}"></td>`;
+    return '<tr'+rowStyle+'>' +
+      checkboxCell +
+      '<td data-label="N°"><strong>'+escapeHtml(e.id)+'</strong></td>' +
+      '<td data-label="Projet"><input type="text" value="'+escapeHtml(e.projet||'')+'" onchange="updateSuivi('+i+', \'projet\', this.value)" style="width:100%; min-width:80px;"></td>' +
+      '<td data-label="Client"><input type="text" value="'+escapeHtml(e.client||'')+'" onchange="updateSuivi('+i+', \'client\', this.value)" style="width:100%; min-width:100px;"></td>' +
+      '<td data-label="Date"><input type="date" value="'+escapeHtml(e.date||'')+'" onchange="updateSuivi('+i+', \'date\', this.value)"></td>' +
+      '<td data-label="Description"><input type="text" value="'+escapeHtml(e.description||'')+'" onchange="updateSuivi('+i+', \'description\', this.value)" style="width:100%; min-width:150px;"></td>' +
+      '<td data-label="Demandé par"><input type="text" value="'+escapeHtml(e.demandePar||'')+'" onchange="updateSuivi('+i+', \'demandePar\', this.value)" style="width:80px;"></td>' +
+      '<td class="num" data-label="Montant"><input type="number" step="0.01" value="'+(parseFloat(e.montant)||0).toFixed(2)+'" onchange="updateSuivi('+i+', \'montant\', parseFloat(this.value)||0)" style="width:110px; text-align:right;"></td>' +
+      '<td data-label="État"><select onchange="updateSuivi('+i+', \'etat\', this.value)" style="border-left:4px solid '+c+';">'+sel+'</select></td>' +
+      '<td data-label="Notes"><input type="text" value="'+escapeHtml(e.notes||'')+'" onchange="updateSuivi('+i+', \'notes\', this.value)" style="width:100%; min-width:100px;"></td>' +
+      '<td><button class="remove-btn" onclick="deleteSuivi('+i+')">✕</button></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function exporterSuivi() {
+  if (!window.XLSX) { alert('Librairie Excel pas chargée. Vérifiez votre connexion internet.'); return; }
+  const wb = XLSX.utils.book_new();
+  const headers = ['N° Extra','Projet','Client','Date','Description','Demandé par','Quantité','Prix unitaire','Montant total','État','Notes'];
+  const rows = [headers];
+  SUIVI.forEach(e => rows.push([e.id, e.projet, e.client, e.date, e.description, e.demandePar, e.qte||1, e.prixUnit||0, e.montant, e.etat, e.notes]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(wb, ws, 'Suivi des Extras');
+  const today = new Date().toISOString().substring(0,10);
+  XLSX.writeFile(wb, 'Suivi_Extras_'+today+'.xlsx');
+}
+
+function importSuivi(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array', cellDates: true });
+      const sn = wb.SheetNames.find(n => norm(n).includes('suivi')) || wb.SheetNames[0];
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: null });
+      // find header row (contains "N° Extra")
+      let hdrRow = -1;
+      for (let i = 0; i < Math.min(10, rows.length); i++) {
+        if (rows[i] && rows[i].some(c => c && norm(String(c)).includes('extra'))) { hdrRow = i; break; }
+      }
+      if (hdrRow < 0) throw new Error('Format inconnu : pas trouvé l\'en-tête.');
+      const newList = [];
+      for (let i = hdrRow + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row[0]) continue;
+        let mt = row[8];
+        if (typeof mt === 'string') mt = parseFloat(mt.replace(/[^0-9.,-]/g,'').replace(',','.')) || 0;
+        let dt = row[3];
+        if (dt instanceof Date) dt = dt.toISOString().substring(0,10);
+        else if (dt) {
+          const m = String(dt).match(/(\d{2})-(\d{2})-(\d{4})/);
+          if (m) dt = m[3]+'-'+m[2]+'-'+m[1];
+          else dt = String(dt);
+        } else dt = '';
+        newList.push({
+          id: String(row[0]).trim(),
+          projet: String(row[1]||'').trim(),
+          client: String(row[2]||'').trim(),
+          date: dt,
+          description: String(row[4]||'').trim(),
+          demandePar: String(row[5]||'').trim(),
+          qte: parseFloat(row[6])||1,
+          prixUnit: parseFloat(row[7])||0,
+          montant: parseFloat(mt)||0,
+          etat: String(row[9]||'En cours').trim(),
+          notes: String(row[10]||'').trim()
+        });
+      }
+      if (newList.length === 0) throw new Error('Aucune ligne valide trouvée.');
+      if (confirm('Remplacer le suivi actuel par '+newList.length+' extras importés ? (Annuler pour fusionner)')) {
+        SUIVI = newList;
+      } else {
+        // merge: ajoute ceux qui n'existent pas
+        const existingIds = new Set(SUIVI.map(e => e.id));
+        let added = 0;
+        newList.forEach(e => { if (!existingIds.has(e.id)) { SUIVI.push(e); added++; } });
+        document.getElementById('suiviStatus').textContent = '✓ '+added+' nouveaux extras ajoutés.';
+      }
+      saveSuivi();
+      renderSuivi();
+    } catch(err) {
+      document.getElementById('suiviStatus').innerHTML = '<span style="color:#c33">⚠ '+err.message+'</span>';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+
+// Charger depuis localStorage si présent
+try {
+  const stored = localStorage.getItem('extras_projects_v1');
+  if (stored) {
+    const arr = JSON.parse(stored);
+    if (Array.isArray(arr) && arr.length > 0) {
+      PROJECTS_LIVE = arr;
+      setTimeout(() => {
+        const el = document.getElementById('importStatus');
+        if (el) el.textContent = '✓ ' + arr.length + ' projets chargés depuis votre dernier import.';
+      }, 100);
+    }
+  }
+} catch(e) { console.warn(e); }
+
+function saveProjectsToStorage() {
+  try { localStorage.setItem('extras_projects_v1', JSON.stringify(PROJECTS_LIVE)); }
+  catch(e) { console.warn('localStorage indisponible:', e); }
+}
+
+function resetProjects() {
+  if (!confirm("Restaurer la liste de projets d'origine? Vos imports seront effacés.")) return;
+  PROJECTS_LIVE = PROJECTS_ORIGINAL.slice();
+  try { localStorage.removeItem('extras_projects_v1'); } catch(e) {}
+  document.getElementById('importStatus').textContent = "✓ Liste d'origine restaurée (" + PROJECTS_LIVE.length + ' projets).';
+  searchProjects();
+}
+
+// Import du fichier Productions.xlsx
+function handleXlsxImport(file) {
+  const status = document.getElementById('importStatus');
+  status.textContent = '⏳ Lecture du fichier...';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array', cellDates: true });
+      // Trouve la bonne feuille (Productions - Année en cours, ou la première)
+      let sheetName = wb.SheetNames.find(n => norm(n).includes('production')) || wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+      if (rows.length < 2) throw new Error('Fichier vide');
+
+      // Identifie les colonnes par nom du header (ligne 0)
+      const headers = rows[0].map(h => norm(h));
+      const findCol = (...keywords) => {
+        for (let i = 0; i < headers.length; i++) {
+          const h = headers[i];
+          if (keywords.every(k => h.includes(norm(k)))) return i;
+        }
+        return -1;
+      };
+      const idx = {
+        no_contrat: findCol('contrat', 'original'),
+        etat: findCol('etat'),
+        type: findCol('type', 'travaux'),
+        client: findCol('client', '1'),
+        cee: findCol('cee'),
+        cp: findCol('cp'),
+        adresse: findCol('adresse'),
+        vendeur: findCol('vendeur', 'original'),
+        total: findCol('total'),
+        extra: findCol('extra'),
+        vente_total: findCol('vente', 'total')
+      };
+      // Fallback simples si pas trouvé exactement
+      if (idx.no_contrat < 0) idx.no_contrat = findCol('no contrat');
+      if (idx.client < 0) idx.client = findCol('client');
+      if (idx.adresse < 0) idx.adresse = findCol('adresse');
+      if (idx.vendeur < 0) idx.vendeur = findCol('vendeur');
+
+      const newProjects = [];
+      for (let r = 1; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || !row[idx.no_contrat]) continue;
+        newProjects.push({
+          no_contrat: String(row[idx.no_contrat]).trim(),
+          etat: idx.etat >= 0 ? (row[idx.etat] || '') : '',
+          type: idx.type >= 0 ? (row[idx.type] || '') : '',
+          client: idx.client >= 0 ? (row[idx.client] || '') : '',
+          adresse: idx.adresse >= 0 ? (row[idx.adresse] || '') : '',
+          vendeur: idx.vendeur >= 0 ? (row[idx.vendeur] || '') : '',
+          cee: idx.cee >= 0 ? (row[idx.cee] || '') : '',
+          cp: idx.cp >= 0 ? (row[idx.cp] || '') : '',
+          total: idx.total >= 0 ? (parseFloat(row[idx.total]) || 0) : 0,
+          extra: idx.extra >= 0 ? (parseFloat(row[idx.extra]) || 0) : 0,
+          vente_total: idx.vente_total >= 0 ? (parseFloat(row[idx.vente_total]) || 0) : 0
+        });
+      }
+      if (newProjects.length === 0) throw new Error('Aucun projet trouvé. Vérifiez le format du fichier.');
+      PROJECTS_LIVE = newProjects;
+      saveProjectsToStorage();
+      status.innerHTML = '<span style="color:#2a9d4f">✓ Import réussi : ' + newProjects.length + ' projets chargés (sauvegardés sur ce téléphone).</span>';
+      searchProjects();
+    } catch (err) {
+      status.innerHTML = '<span style="color:#c33">⚠ Erreur : ' + err.message + '</span>';
+      console.error(err);
+    }
+  };
+  reader.onerror = function() {
+    status.innerHTML = '<span style="color:#c33">⚠ Impossible de lire le fichier</span>';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function updateProjCount() {
+  const el = document.getElementById('projCount');
+  if (el) el.textContent = '(' + PROJECTS_LIVE.length + ' projets disponibles)';
+}
+
+function searchProjects() {
+  updateProjCount();
+  const q = norm(document.getElementById('projectSearch').value);
+  const div = document.getElementById('projectResults');
+  if (q.length < 1) {
+    div.innerHTML = '<div class="empty">Tapez quelques lettres pour chercher parmi les ' + PROJECTS_LIVE.length + ' projets.</div>';
+    return;
+  }
+  const terms = q.split(/\s+/).filter(t => t);
+  const filtered = PROJECTS_LIVE.filter(p => {
+    const haystack = norm(p.no_contrat + ' ' + p.client + ' ' + p.adresse + ' ' + p.cp + ' ' + p.vendeur + ' ' + p.type);
+    return terms.every(t => haystack.includes(t));
+  }).slice(0, 30);
+  if (filtered.length === 0) {
+    div.innerHTML = '<div class="empty">Aucun projet trouvé.</div>';
+    return;
+  }
+  div.innerHTML = filtered.map((p, idx) => {
+    const etatColor = p.etat === 'Travaux en cours' ? '#2a9d4f' : (p.etat === 'Travaux arrêtés' ? '#c33' : '#888');
+    const tot = p.total ? fmt(p.total) : '-';
+    const ext = (p.extra !== undefined && p.extra !== 0) ? fmt(p.extra) : '-';
+    return `<div class="results-item" onclick="selectProject(${PROJECTS_LIVE.indexOf(p)})">
+      <div class="item-info">
+        <div class="item-name"><strong>${escapeHtml(p.no_contrat)}</strong> — ${escapeHtml(p.client)}</div>
+        <div class="item-meta">${escapeHtml(p.adresse)} • ${escapeHtml(p.type)}</div>
+        <div class="item-meta">CP: ${escapeHtml(p.cp||'-')} • <span style="color:${etatColor}">${escapeHtml(p.etat)}</span> • Total: <strong>${tot}</strong> • Extra: <strong>${ext}</strong></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectProject(idx) {
+  const p = PROJECTS_LIVE[idx];
+  document.getElementById('numContrat').value = p.no_contrat;
+  document.getElementById('client').value = p.client;
+  document.getElementById('adresse').value = p.adresse;
+  document.getElementById('vendeur').value = p.vendeur;
+  document.getElementById('totalContrat').value = (p.total || 0).toFixed(2);
+  document.getElementById('extraContrat').value = (p.extra || 0).toFixed(2);
+  document.getElementById('venteTotal').value = (p.vente_total || 0).toFixed(2);
+  // Try match CP to known email
+  const cpKey = norm(p.cp);
+  const emailMatch = CP_NAME_TO_EMAIL[cpKey];
+  const sel = document.getElementById('emailCP');
+  const customField = document.getElementById('emailCPCustom');
+  if (emailMatch) {
+    sel.value = emailMatch;
+    customField.style.display = 'none';
+  } else if (p.cp) {
+    sel.value = '__autre__';
+    customField.style.display = 'block';
+    customField.value = '';
+    customField.placeholder = 'CP: ' + p.cp + ' (email à saisir)';
+  } else {
+    sel.value = '';
+    customField.style.display = 'none';
+  }
+  // Show confirmation
+  const conf = document.getElementById('projectSelected');
+  conf.innerHTML = `✓ Projet sélectionné : <strong>${escapeHtml(p.no_contrat)}</strong> — ${escapeHtml(p.client)} (CP: ${escapeHtml(p.cp||'-')})`;
+  document.getElementById('projectResults').innerHTML = '';
+  document.getElementById('projectSearch').value = '';
+}
+
+
+// Default date = today
+document.getElementById('dateExtra').valueAsDate = new Date();
+
+const fmt = (n) => {
+  if (isNaN(n)) n = 0;
+  return n.toLocaleString('fr-CA', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' $';
+};
+const norm = (s) => (s||'').toString().toLowerCase()
+  .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+function getMarge() {
+  const v = parseFloat(document.getElementById('margePct').value);
+  return isNaN(v) ? 0 : v;
+}
+
+// Coût de base (sans marge) — utilisé comme référence
+function getBaseCost(item) {
+  if (item.type === 'extra') {
+    // For extras, prix_sans_marge is the cost; if 0 (some items), fall back to prix_base
+    return item.prix_sans_marge || item.prix_base || 0;
+  } else {
+    return item.prix_commercial || 0;
+  }
+}
+
+// Prix de vente = coût / (1 - marge/100)  (marge sur prix de vente, comme dans l'Excel)
+// Ex: marge 50% → prix = coût × 2 ; marge 25% → prix = coût × 1,333...
+function getSellPrice(item) {
+  const base = getBaseCost(item);
+  const marge = getMarge();
+  if (marge >= 100) return base * 1000; // garde-fou
+  return base / (1 - marge / 100);
+}
+
+function search() {
+  const q = norm(document.getElementById('searchInput').value);
+  const src = document.getElementById('filterSource').value;
+
+  let pool = [];
+  if (src === 'all' || src === 'extra') pool = pool.concat(DATA.extras);
+  if (src === 'all' || src === 'catalogue') pool = pool.concat(DATA.catalogue);
+
+  let results = pool;
+  if (q.length >= 1) {
+    const terms = q.split(/\s+/).filter(t => t);
+    results = pool.filter(item => {
+      const haystack = norm((item.code||'') + ' ' + (item.nom||'') + ' ' + (item.description||''));
+      return terms.every(t => haystack.includes(t));
+    });
+  }
+
+  // Filter out items with zero base cost
+  results = results.filter(item => getBaseCost(item) > 0);
+  results = results.slice(0, 100);
+
+  const div = document.getElementById('results');
+  if (results.length === 0) {
+    div.innerHTML = '<div class="empty">Aucun résultat. Tapez quelques lettres pour chercher.</div>';
+    return;
+  }
+
+  div.innerHTML = results.map((item, idx) => {
+    const isExtra = item.type === 'extra';
+    const name = isExtra ? item.nom : item.description;
+    const code = item.code || '';
+    const unit = item.unite || '';
+    const baseCost = getBaseCost(item);
+    const sellPrice = getSellPrice(item);
+    const badge = isExtra
+      ? '<span class="badge badge-extra">Extra</span>'
+      : '<span class="badge badge-cat">Catalogue</span>';
+    return `<div class="results-item" onclick="addItem('${item.type}', ${pool.indexOf(item)}, ${idx})">
+      <div class="item-info">
+        <div class="item-name">${badge}${escapeHtml(name)}</div>
+        <div class="item-meta">${code ? 'Code: '+escapeHtml(code)+' • ' : ''}Unité: ${escapeHtml(unit||'-')} • Coût: ${fmt(baseCost)}</div>
+      </div>
+      <div class="item-price">${fmt(sellPrice)} / ${escapeHtml(unit||'un')}</div>
+    </div>`;
+  }).join('');
+  // Save current pool for click-handler lookup
+  window._currentPool = pool;
+  window._currentResults = results;
+}
+
+function escapeHtml(s) {
+  return (s||'').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function addItem(type, poolIdx, resIdx) {
+  const item = window._currentResults[resIdx];
+  const baseCost = getBaseCost(item);
+  const sellPrice = getSellPrice(item);
+  const name = item.type === 'extra' ? item.nom : item.description;
+  selected.push({
+    nom: name,
+    code: item.code || '',
+    unite: item.unite || '',
+    qte: 1,
+    coutBase: baseCost,       // coût sans marge (référence)
+    prixUnit: sellPrice,       // prix de vente (avec marge appliquée)
+    margeAuto: true,           // si true, recalcul automatique selon marge globale
+    type: item.type
+  });
+  renderSelected();
+}
+
+// Recalcule les prix unitaires des articles déjà ajoutés selon la nouvelle marge
+function recalcMarge() {
+  const marge = getMarge();
+  const facteur = marge >= 100 ? 1000 : 1 / (1 - marge / 100);
+  selected.forEach(it => {
+    if (it.margeAuto) {
+      it.prixUnit = (it.coutBase || 0) * facteur;
+    }
+  });
+  renderSelected();
+  search(); // refresh search results too
+}
+
+function renderSelected() {
+  const tbody = document.getElementById('selectedBody');
+  if (selected.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Aucun article sélectionné. Utilisez la recherche ci-dessus pour ajouter des articles.</td></tr>';
+    document.getElementById('coutTotal').textContent = fmt(0);
+    document.getElementById('margeAffiche').textContent = '+ 0,00 $ (0%)';
+    document.getElementById('sousTotal').textContent = fmt(0);
+    updateImpactProjet(0);
+    return;
+  }
+
+  let st = 0, coutTotal = 0;
+  tbody.innerHTML = selected.map((it, i) => {
+    const total = it.qte * it.prixUnit;
+    const cout = it.qte * (it.coutBase || 0);
+    st += total;
+    coutTotal += cout;
+    // Marge sur prix de vente: marge% = (prix - coût) / prix × 100
+    const margePct = it.prixUnit > 0 ? ((it.prixUnit - it.coutBase) / it.prixUnit * 100).toFixed(1) : '-';
+    const lockIcon = it.margeAuto ? '🔄' : '🔒';
+    const lockTitle = it.margeAuto ? 'Auto: suit la marge globale (cliquer pour figer)' : 'Figé: prix manuel (cliquer pour réactiver auto)';
+    return `<tr>
+      <td data-label="Article">${escapeHtml(it.nom)}${it.code ? '<br><small style="color:#888">'+escapeHtml(it.code)+'</small>' : ''}<br><small style="color:#888">Coût: ${fmt(it.coutBase||0)} • Marge: ${margePct}%</small></td>
+      <td data-label="Unité">${escapeHtml(it.unite||'-')}</td>
+      <td class="qty" data-label="Qté"><input type="number" inputmode="decimal" step="0.01" min="0" value="${it.qte}" onchange="updateQte(${i}, this.value)"></td>
+      <td class="qty" data-label="Prix unit."><input type="number" inputmode="decimal" step="0.01" min="0" value="${it.prixUnit.toFixed(2)}" onchange="updatePrix(${i}, this.value)"> <span class="no-print" style="cursor:pointer; font-size:14px; padding:4px;" title="${lockTitle}" onclick="toggleLock(${i})">${lockIcon}</span></td>
+      <td class="num" data-label="Total"><strong>${fmt(total)}</strong></td>
+      <td class="no-print" data-label=""><button class="remove-btn" onclick="removeItem(${i})">Retirer</button></td>
+    </tr>`;
+  }).join('');
+  // store totals for email
+  window._coutTotal = coutTotal;
+
+  const margeMontant = st - coutTotal;
+  // Marge sur prix de vente
+  const margePctEff = st > 0 ? (margeMontant / st * 100) : 0;
+  document.getElementById('coutTotal').textContent = fmt(coutTotal);
+  document.getElementById('margeAffiche').textContent = '+ ' + fmt(margeMontant) + ' (' + margePctEff.toFixed(1) + '%)';
+  document.getElementById('sousTotal').textContent = fmt(st);
+
+  // Impact sur le projet
+  updateImpactProjet(st);
+}
+
+function updateImpactProjet(nouvelExtra) {
+  const refMode = (document.getElementById('refProjet') || {}).value || 'vente';
+  const venteTotal = parseFloat(document.getElementById('venteTotal').value) || 0;
+  const totalContrat = parseFloat(document.getElementById('totalContrat').value) || 0;
+  const extraCumul = parseFloat(document.getElementById('extraContrat').value) || 0;
+
+  const ref = refMode === 'total' ? totalContrat : venteTotal;
+
+  const pct = ref > 0 ? (nouvelExtra / ref * 100) : 0;
+  const nouveauCumul = extraCumul + nouvelExtra;
+  const cumulPct = ref > 0 ? (nouveauCumul / ref * 100) : 0;
+  const nouveauTotal = (refMode === 'total' ? totalContrat : (venteTotal + extraCumul)) + nouvelExtra;
+
+  // Couleur selon le %
+  const pctColor = pct < 5 ? '#2a9d4f' : (pct < 15 ? '#e8a93b' : '#c33');
+
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  set('impactRef', fmt(ref));
+  set('impactExtraCumul', fmt(extraCumul));
+  set('impactNouveauExtra', fmt(nouvelExtra));
+  set('impactPct', pct.toFixed(2) + ' %');
+  set('impactCumulNouveau', fmt(nouveauCumul));
+  set('impactCumulPct', cumulPct.toFixed(2) + ' %');
+  set('impactNouveauTotal', fmt(nouveauTotal));
+
+  const pctEl = document.getElementById('impactPct');
+  if (pctEl) pctEl.style.color = pctColor;
+  const nxEl = document.getElementById('impactNouveauExtra');
+  if (nxEl) nxEl.style.color = pctColor;
+}
+
+function updateQte(i, v) { selected[i].qte = parseFloat(v)||0; renderSelected(); }
+function updatePrix(i, v) {
+  selected[i].prixUnit = parseFloat(v)||0;
+  selected[i].margeAuto = false; // user edited price → freeze it
+  renderSelected();
+}
+function toggleLock(i) {
+  selected[i].margeAuto = !selected[i].margeAuto;
+  if (selected[i].margeAuto) {
+    const m = getMarge();
+    const f = m >= 100 ? 1000 : 1 / (1 - m / 100);
+    selected[i].prixUnit = (selected[i].coutBase || 0) * f;
+  }
+  renderSelected();
+}
+function removeItem(i) { selected.splice(i,1); renderSelected(); }
+
+function buildEmailBody() {
+  const numC = document.getElementById('numContrat').value || '-';
+  const client = document.getElementById('client').value || '-';
+  const adresse = document.getElementById('adresse').value || '-';
+  const date = document.getElementById('dateExtra').value || '-';
+  const vendeur = document.getElementById('vendeur').value || '-';
+  const notes = document.getElementById('notes').value || '';
+
+  let body = `Bonjour,\n\nVoici la demande d'extra / travaux supplémentaires :\n\n`;
+  const totC = parseFloat(document.getElementById('totalContrat').value) || 0;
+  const extC = parseFloat(document.getElementById('extraContrat').value) || 0;
+  const venteC = parseFloat(document.getElementById('venteTotal').value) || 0;
+
+  body += `• N° contrat : ${numC}\n`;
+  body += `• Client     : ${client}\n`;
+  body += `• Adresse    : ${adresse}\n`;
+  body += `• Date       : ${date}\n`;
+  body += `• Demandeur  : ${vendeur}\n`;
+  if (venteC) body += `• Vente totale : ${venteC.toFixed(2)} $\n`;
+  if (totC)   body += `• Total contrat : ${totC.toFixed(2)} $\n`;
+  if (extC)   body += `• Extra cumulé  : ${extC.toFixed(2)} $\n`;
+  body += `\n`;
+
+  body += `DÉTAIL DES TRAVAUX :\n`;
+  body += `${'─'.repeat(60)}\n`;
+  let st = 0;
+  selected.forEach((it, idx) => {
+    const tot = it.qte * it.prixUnit;
+    st += tot;
+    body += `${idx+1}. ${it.nom}\n`;
+    if (it.code) body += `   Code : ${it.code}\n`;
+    body += `   Qté : ${it.qte} ${it.unite}  ×  ${it.prixUnit.toFixed(2)} $/${it.unite||'un'}  =  ${tot.toFixed(2)} $\n\n`;
+  });
+  body += `${'─'.repeat(60)}\n`;
+  body += `Marge appliquée : ${getMarge()}%\n`;
+  body += `MONTANT DE L'EXTRA : ${st.toFixed(2)} $\n`;
+
+  // Impact projet
+  const refMode = (document.getElementById('refProjet') || {}).value || 'vente';
+  const ref = refMode === 'total' ? totC : venteC;
+  if (ref > 0) {
+    body += `\nIMPACT SUR LE PROJET :\n`;
+    body += `  Référence (${refMode === 'total' ? 'total contrat' : 'vente initiale'}) : ${ref.toFixed(2)} $\n`;
+    body += `  Cet extra représente ${(st/ref*100).toFixed(2)} % de la référence\n`;
+    if (extC) {
+      const nouveauCumul = extC + st;
+      body += `  Cumul d'extras (avant)  : ${extC.toFixed(2)} $ (${(extC/ref*100).toFixed(2)} %)\n`;
+      body += `  Cumul d'extras (après)  : ${nouveauCumul.toFixed(2)} $ (${(nouveauCumul/ref*100).toFixed(2)} %)\n`;
+    }
+    const nouveauTotal = (refMode === 'total' ? totC : venteC + extC) + st;
+    body += `  Nouveau total projet    : ${nouveauTotal.toFixed(2)} $\n`;
+  }
+
+  if (notes.trim()) {
+    body += `\nNOTES :\n${notes}\n`;
+  }
+  body += `\nMerci de valider cette demande.\n\nCordialement,\n${vendeur}`;
+  return body;
+}
+
+function getEmailCP() {
+  const sel = document.getElementById('emailCP').value;
+  if (sel === '__autre__') {
+    return document.getElementById('emailCPCustom').value.trim();
+  }
+  return sel.trim();
+}
+
+function genererEmail() {
+  const email = getEmailCP();
+  if (!email) { alert("Veuillez choisir le chargé de projet."); return; }
+  if (selected.length === 0) { alert("Aucun article sélectionné."); return; }
+  const numC = document.getElementById('numContrat').value || '';
+  const client = document.getElementById('client').value || '';
+  const subject = `Demande d'extra${numC ? ' - Contrat '+numC : ''}${client ? ' - '+client : ''}`;
+  const body = buildEmailBody();
+  const url = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+  // Auto-sauvegarde dans le suivi en "Envoyé au client"
+  try {
+    const data = getCurrentExtraData();
+    if (data.projet) ajouterAuSuivi(data, 'Envoyé au client');
+  } catch(err) {}
+
+  window.location.href = url;
+}
+
+function copierTexte() {
+  if (selected.length === 0) { alert("Aucun article sélectionné."); return; }
+  const txt = buildEmailBody();
+  navigator.clipboard.writeText(txt).then(()=>{
+    alert('Récapitulatif copié dans le presse-papiers.');
+  }, ()=>{
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    alert('Récapitulatif copié.');
+  });
+}
+
+function reinitialiser() {
+  if (!confirm('Effacer tous les articles et informations?')) return;
+  selected = [];
+  ['numContrat','client','adresse','vendeur','notes','searchInput','emailCPCustom','totalContrat','extraContrat','venteTotal'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('emailCP').value = '';
+  document.getElementById('emailCPCustom').style.display = 'none';
+  document.getElementById('dateExtra').valueAsDate = new Date();
+  renderSelected();
+  search();
+}
+
+// Init
+document.getElementById('projectSearch').addEventListener('input', searchProjects);
+document.getElementById('importXlsx').addEventListener('change', function(e) {
+  if (e.target.files && e.target.files[0]) {
+    handleXlsxImport(e.target.files[0]);
+    e.target.value = ''; // reset so reselecting same file works
+  }
+});
+// Recalcul de l'impact projet quand l'utilisateur change les montants ou la référence
+['totalContrat','extraContrat','venteTotal','refProjet'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', renderSelected);
+  if (el) el.addEventListener('change', renderSelected);
+});
+
+document.getElementById('searchInput').addEventListener('input', search);
+document.getElementById('filterSource').addEventListener('change', search);
+document.getElementById('margePct').addEventListener('input', recalcMarge);
+document.getElementById('emailCP').addEventListener('change', function() {
+  const custom = document.getElementById('emailCPCustom');
+  custom.style.display = (this.value === '__autre__') ? 'block' : 'none';
+  if (this.value === '__autre__') custom.focus();
+});
+// Listeners suivi
+const _suiviSearchEl = document.getElementById('suiviSearch');
+if (_suiviSearchEl) _suiviSearchEl.addEventListener('input', renderSuivi);
+const _suiviFilterEl = document.getElementById('suiviFilterEtat');
+if (_suiviFilterEl) _suiviFilterEl.addEventListener('change', renderSuivi);
+const _suiviImpEl = document.getElementById('importSuivi');
+if (_suiviImpEl) _suiviImpEl.addEventListener('change', function(e) {
+  if (e.target.files && e.target.files[0]) { importSuivi(e.target.files[0]); e.target.value=''; }
+});
+
+searchProjects();
+search();
+renderSelected();
+renderSuivi();
+initOneDriveSync();
+</script>
+</body>
+</html>
